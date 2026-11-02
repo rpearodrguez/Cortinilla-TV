@@ -124,6 +124,10 @@ Las opciones también se recuerdan solas al cerrar la app; el archivo sirve para
 
 La app no usa red ni envía datos. Tus preferencias y el logo elegido se guardan solo en el almacenamiento local de la app en tu equipo, no en este repositorio.
 
+## Soporte
+
+Este es un proyecto personal, hecho por diversión y compartido tal cual (ver la licencia). No ofrezco soporte ni garantizo que se resuelvan los problemas o se acepten sugerencias. Si encuentras un error puedes abrir un *issue*, pero puede que no lo atienda.
+
 ## Licencia
 
 [MIT](LICENSE) © 2026 Richard Peña. Los logos y marcas que cargues en la app pertenecen a sus respectivos dueños.
@@ -199,6 +203,10 @@ npm start
 ### Privacy
 
 The app makes no network requests and sends no data. Your settings and chosen logo are stored only in the app's local storage on your machine, never in this repository.
+
+### Support
+
+This is a personal project, made for fun and shared as is (see the license). I don't offer support and can't promise that problems will be fixed or suggestions accepted. If you find a bug you can open an issue, but I may not get to it.
 
 ### License
 
