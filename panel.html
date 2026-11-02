@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cortinilla 2004</title>
+<link rel="stylesheet" href="lower.css">
+<style>
+  body { margin: 0; padding: 12px; font: 13px Tahoma, Verdana, sans-serif; background: #f0f0f0; color: #111; }
+  .body { display: grid; gap: 10px; }
+  label { display: grid; gap: 3px; font-weight: bold; }
+  input, select, button { font: inherit; padding: 6px; }
+  .row { display: flex; gap: 6px; }
+  .row button { flex: 1; cursor: pointer; }
+  #go { background: #1f5fd1; color: #fff; border: 1px solid #0b3a9c; }
+  #logoPreview { height: 50px; display: none; align-items: center; justify-content: center; background: #ddd; border: 1px solid #aaa; }
+  #logoImg { max-height: 46px; max-width: 100%; }
+  .colors { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .colors label { text-align: center; }
+  input[type=color] { width: 100%; height: 30px; padding: 0; cursor: pointer; }
+  small { color: #555; }
+
+  /* selector de idioma: botones directos */
+  .top { display: flex; justify-content: flex-end; gap: 4px; }
+  .langbtn { padding: 3px 9px; cursor: pointer; font-weight: bold; background: #e4e4e4; border: 1px solid #999; border-radius: 3px; }
+  .langbtn.active { background: #1f5fd1; color: #fff; border-color: #0b3a9c; }
+
+  /* vista previa (no se muestra en la pantalla compartida) */
+  #preview { aspect-ratio: 16 / 9; width: 100%; border: 1px solid #555; border-radius: 3px; cursor: pointer;
+             background: #2b2b2b repeating-conic-gradient(#3a3a3a 0 25%, #2b2b2b 0 50%) 0 0 / 20px 20px; }
+  #previewLabel { display: flex; justify-content: space-between; font-weight: bold; }
+  #previewLabel small { font-weight: normal; }
+</style>
+</head>
+<body>
+<div class="body">
+  <div class="top">
+    <button class="langbtn" id="langEs" title="Español">ES</button>
+    <button class="langbtn" id="langEn" title="English">EN</button>
+  </div>
+  <div>
+    <div id="previewLabel"><span data-i18n="preview"></span><small data-i18n="previewHint"></small></div>
+    <div class="stage" id="preview">
+      <div class="lower static">
+        <div class="lt-logo"><span class="lt-logo-text">TV</span><img class="lt-logo-img" alt=""></div>
+        <div class="lt-bar">
+          <div class="lt-pre"></div>
+          <div class="lt-title"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <label><span data-i18n="prefix"></span>
+    <select id="prefix"></select>
+  </label>
+  <label><span data-i18n="show"></span>
+    <input id="show" type="text" autocomplete="off">
+  </label>
+  <label><span data-i18n="display"></span>
+    <select id="display"></select>
+  </label>
+  <label><span data-i18n="logoText"></span>
+    <input id="logo" type="text" value="TV" maxlength="6">
+  </label>
+  <div class="row">
+    <button id="pickLogo" data-i18n="pickLogo"></button>
+    <button id="clearLogo" data-i18n="clearLogo"></button>
+  </div>
+  <div id="logoPreview"><img id="logoImg" alt=""></div>
+  <div class="colors">
+    <label><span data-i18n="cBar"></span> <input id="cBar" type="color" value="#1f5fd1"></label>
+    <label><span data-i18n="cPre"></span> <input id="cPre" type="color" value="#ffd84a"></label>
+    <label><span data-i18n="cTitle"></span> <input id="cTitle" type="color" value="#ffffff"></label>
+    <label><span data-i18n="cLogo"></span> <input id="cLogo" type="color" value="#f5a800"></label>
+  </div>
+  <button id="resetColors" data-i18n="resetColors"></button>
+  <label><span data-i18n="dur"></span>
+    <input id="dur" type="number" min="0" value="8">
+  </label>
+  <div class="row">
+    <button id="go" data-i18n="go"></button>
+    <button id="stop" data-i18n="stop"></button>
+  </div>
+  <button id="quit" data-i18n="quit"></button>
+  <small data-i18n="hint"></small>
+</div>
+<script src="lower.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+
+  // ---------- Idiomas ----------
+  const I18N = {
+    es: {
+      preview: 'Vista previa', previewHint: '(clic para repetir la animación)',
+      previewShow: 'Nombre de la serie',
+      prefix: 'Frase',
+      phrases: ['A continuación', 'Seguimos con', 'Regresamos con', 'Más tarde', 'Próximamente', 'Esta noche', 'Estás viendo'],
+      show: 'Serie / programa',
+      showPh: 'Ej: Los Simpson',
+      display: 'Mostrar en',
+      screen: 'Pantalla',
+      main: 'principal',
+      logoText: 'Logo del canal (texto)',
+      pickLogo: '🖼 Elegir imagen de logo…',
+      clearLogo: 'Quitar',
+      cBar: 'Barra', cPre: 'Frase', cTitle: 'Título', cLogo: 'Logo',
+      resetColors: 'Restaurar colores',
+      dur: 'Duración (segundos, 0 = manual)',
+      go: '▶ Mostrar (Enter)',
+      stop: '■ Ocultar (Esc)',
+      quit: 'Cerrar cortinilla',
+      hint: 'La cortinilla aparece sobre la pantalla elegida, sin bloquear el ratón.'
+    },
+    en: {
+      preview: 'Preview', previewHint: '(click to replay the animation)',
+      previewShow: 'Show name',
+      prefix: 'Phrase',
+      phrases: ['Up next', 'Coming up', 'Back to', 'Later tonight', 'Coming soon', 'Tonight', "You're watching"],
+      show: 'Show / series',
+      showPh: 'E.g. The Simpsons',
+      display: 'Show on',
+      screen: 'Screen',
+      main: 'main',
+      logoText: 'Channel logo (text)',
+      pickLogo: '🖼 Choose logo image…',
+      clearLogo: 'Remove',
+      cBar: 'Bar', cPre: 'Phrase', cTitle: 'Title', cLogo: 'Logo',
+      resetColors: 'Reset colors',
+      dur: 'Duration (seconds, 0 = manual)',
+      go: '▶ Show (Enter)',
+      stop: '■ Hide (Esc)',
+      quit: 'Close overlay',
+      hint: 'The overlay appears on the chosen screen and never blocks the mouse.'
+    }
+  };
+
+  let lang = 'es';
+  try { lang = localStorage.getItem('cortinilla-lang') || (navigator.language.startsWith('en') ? 'en' : 'es'); } catch (e) {}
+  if (!I18N[lang]) lang = 'es';
+  const t = () => I18N[lang];
+
+  let prefixIndex = 0;
+  try {
+    const s = JSON.parse(localStorage.getItem('cortinilla') || '{}');
+    if (Number.isInteger(s.prefixIndex)) prefixIndex = s.prefixIndex;
+    if (s.logo) $('logo').value = s.logo;
+    if (s.dur != null) $('dur').value = s.dur;
+  } catch (e) {}
+
+  let displaysCache = null;
+  function renderDisplays() {
+    if (!displaysCache) return;
+    $('display').innerHTML = displaysCache.displays
+      .map((d, i) => `<option value="${d.id}">${t().screen} ${i + 1} (${d.size})${d.primary ? ' - ' + t().main : ''}</option>`)
+      .join('');
+    $('display').value = displaysCache.current;
+  }
+
+  function applyLang() {
+    document.documentElement.lang = lang;
+    $('langEs').classList.toggle('active', lang === 'es');
+    $('langEn').classList.toggle('active', lang === 'en');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const v = t()[el.dataset.i18n];
+      if (typeof v === 'string') el.textContent = v;
+    });
+    $('prefix').innerHTML = t().phrases.map((p, i) => `<option value="${i}">${p}</option>`).join('');
+    $('prefix').value = prefixIndex;
+    $('show').placeholder = t().showPh;
+    renderDisplays();
+    updatePreview();
+  }
+
+  function setLang(l) {
+    lang = l;
+    try { localStorage.setItem('cortinilla-lang', lang); } catch (e) {}
+    applyLang();
+  }
+  $('langEs').onclick = () => setLang('es');
+  $('langEn').onclick = () => setLang('en');
+  $('prefix').onchange = () => { prefixIndex = Number($('prefix').value); updatePreview(); };
+
+  // ---------- Vista previa ----------
+  const stage = $('preview');
+  const previewLower = stage.querySelector('.lower');
+  function currentData() {
+    return {
+      prefix: t().phrases[prefixIndex],
+      name: $('show').value.trim(),
+      logo: $('logo').value || 'TV',
+      logoImg,
+      colors: { bar: $('cBar').value, pre: $('cPre').value, title: $('cTitle').value, logo: $('cLogo').value },
+      dur: parseFloat($('dur').value) || 0
+    };
+  }
+  function updatePreview() {
+    const d = currentData();
+    Lower.fill(stage, { ...d, name: d.name || t().previewShow });
+  }
+  // clic en la vista previa: repite la animación de entrada
+  stage.onclick = () => {
+    previewLower.className = 'lower';
+    void previewLower.offsetWidth;
+    previewLower.className = 'lower in';
+  };
+  document.addEventListener('input', updatePreview);
+
+  // ---------- Colores ----------
+  const COLORS = { cBar: '#1f5fd1', cPre: '#ffd84a', cTitle: '#ffffff', cLogo: '#f5a800' };
+  try {
+    const c = JSON.parse(localStorage.getItem('cortinilla-colors') || '{}');
+    for (const k in COLORS) $(k).value = c[k] || COLORS[k];
+  } catch (e) {}
+  const saveColors = () => {
+    const c = {};
+    for (const k in COLORS) c[k] = $(k).value;
+    try { localStorage.setItem('cortinilla-colors', JSON.stringify(c)); } catch (e) {}
+  };
+  for (const k in COLORS) $(k).oninput = saveColors;
+  $('resetColors').onclick = () => { for (const k in COLORS) $(k).value = COLORS[k]; saveColors(); updatePreview(); };
+
+  // ---------- Logo ----------
+  var logoImg = null;
+  try { logoImg = localStorage.getItem('cortinilla-logo'); } catch (e) {}
+  function renderLogo() {
+    $('logoPreview').style.display = logoImg ? 'flex' : 'none';
+    if (logoImg) $('logoImg').src = logoImg;
+    updatePreview();
+  }
+  renderLogo();
+  $('pickLogo').onclick = async () => {
+    const img = await cortinilla.pickLogo();
+    if (!img) return;
+    logoImg = img;
+    try { localStorage.setItem('cortinilla-logo', img); } catch (e) {}
+    renderLogo();
+  };
+  $('clearLogo').onclick = () => {
+    logoImg = null;
+    try { localStorage.removeItem('cortinilla-logo'); } catch (e) {}
+    renderLogo();
+  };
+
+  // ---------- Pantallas ----------
+  async function loadDisplays() {
+    displaysCache = await cortinilla.getDisplays();
+    renderDisplays();
+  }
+  $('display').onchange = () => cortinilla.setDisplay(Number($('display').value));
+  $('display').onmousedown = loadDisplays;
+
+  // ---------- Mostrar / ocultar ----------
+  function show() {
+    const name = $('show').value.trim();
+    if (!name) { $('show').focus(); return; }
+    const data = currentData();
+    try { localStorage.setItem('cortinilla', JSON.stringify({ prefixIndex, logo: data.logo, dur: $('dur').value })); } catch (e) {}
+    cortinilla.show(data);
+  }
+  $('go').onclick = show;
+  $('stop').onclick = () => cortinilla.hide();
+  $('quit').onclick = () => cortinilla.quit();
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') show();
+    else if (e.key === 'Escape') cortinilla.hide();
+  });
+
+  applyLang();
+  loadDisplays();
+  $('show').focus();
+</script>
+</body>
+</html>

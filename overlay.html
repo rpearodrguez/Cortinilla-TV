@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Overlay</title>
+<link rel="stylesheet" href="lower.css">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
+  .stage { position: fixed; inset: 0; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="lower">
+    <div class="lt-logo"><span class="lt-logo-text">TV</span><img class="lt-logo-img" alt=""></div>
+    <div class="lt-bar">
+      <div class="lt-pre"></div>
+      <div class="lt-title"></div>
+    </div>
+  </div>
+</div>
+<script src="lower.js"></script>
+<script>
+  const stage = document.getElementById('stage');
+  const lower = stage.querySelector('.lower');
+  let timer = null;
+
+  cortinilla.onShow(d => {
+    clearTimeout(timer);
+    Lower.fill(stage, d);
+    lower.className = 'lower';
+    void lower.offsetWidth; // reinicia la animación
+    lower.className = 'lower in';
+    if (d.dur > 0) timer = setTimeout(hide, d.dur * 1000);
+  });
+
+  function hide() {
+    clearTimeout(timer);
+    if (lower.classList.contains('in')) lower.className = 'lower out';
+  }
+  cortinilla.onHide(hide);
+</script>
+</body>
+</html>
