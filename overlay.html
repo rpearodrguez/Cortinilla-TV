@@ -10,35 +10,26 @@
 </style>
 </head>
 <body>
-<div class="stage" id="stage">
-  <div class="lower">
-    <div class="lt-logo"><span class="lt-logo-text">TV</span><img class="lt-logo-img" alt=""></div>
-    <div class="lt-bar">
-      <div class="lt-pre"></div>
-      <div class="lt-title"></div>
-    </div>
-  </div>
-</div>
+<div id="stage"></div>
 <script src="lower.js"></script>
 <script>
   const stage = document.getElementById('stage');
-  const lower = stage.querySelector('.lower');
+  Lower.mount(stage);
   let timer = null;
 
   cortinilla.onShow(d => {
     clearTimeout(timer);
-    Lower.fill(stage, d);
-    lower.className = 'lower';
-    void lower.offsetWidth; // reinicia la animación
-    lower.className = 'lower in';
+    Lower.show(stage, d);
     if (d.dur > 0) timer = setTimeout(hide, d.dur * 1000);
   });
-
   function hide() {
     clearTimeout(timer);
-    if (lower.classList.contains('in')) lower.className = 'lower out';
+    Lower.hide(stage);
   }
   cortinilla.onHide(hide);
+
+  cortinilla.onTicker(t => Lower.showTicker(stage, t));
+  cortinilla.onTickerHide(() => Lower.hideTicker(stage));
 </script>
 </body>
 </html>

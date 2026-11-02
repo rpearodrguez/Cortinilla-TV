@@ -2,87 +2,179 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Cortinilla 2004</title>
+<title>Cortinilla TV</title>
 <link rel="stylesheet" href="lower.css">
 <style>
-  body { margin: 0; padding: 12px; font: 13px Tahoma, Verdana, sans-serif; background: #f0f0f0; color: #111; }
-  .body { display: grid; gap: 10px; }
-  label { display: grid; gap: 3px; font-weight: bold; }
-  input, select, button { font: inherit; padding: 6px; }
-  .row { display: flex; gap: 6px; }
-  .row button { flex: 1; cursor: pointer; }
-  #go { background: #1f5fd1; color: #fff; border: 1px solid #0b3a9c; }
-  #logoPreview { height: 50px; display: none; align-items: center; justify-content: center; background: #ddd; border: 1px solid #aaa; }
-  #logoImg { max-height: 46px; max-width: 100%; }
-  .colors { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-  .colors label { text-align: center; }
-  input[type=color] { width: 100%; height: 30px; padding: 0; cursor: pointer; }
-  small { color: #555; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  /* el tamaño del texto se adapta al tamaño de la ventana; todo lo demás va en em */
+  body { font: clamp(12px, min(1.5vw, 2.1vh), 19px) Tahoma, Verdana, sans-serif; background: #f0f0f0; color: #111; }
+  input, select, button, textarea { font: inherit; padding: .45em; }
+  button { cursor: pointer; }
+  label { display: grid; gap: .25em; font-weight: bold; }
+  small { color: #555; font-size: .92em; }
+  .row { display: flex; gap: .45em; }
+  .row > * { flex: 1; min-width: 0; }
 
-  /* selector de idioma: botones directos */
-  .top { display: flex; justify-content: flex-end; gap: 4px; }
-  .langbtn { padding: 3px 9px; cursor: pointer; font-weight: bold; background: #e4e4e4; border: 1px solid #999; border-radius: 3px; }
+  .app { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 1.1em; height: 100%; padding: .9em; }
+
+  /* ---------- columna izquierda: vista previa y acciones ---------- */
+  .left { display: flex; flex-direction: column; gap: .75em; min-height: 0; overflow-y: auto; }
+  #previewLabel { display: flex; justify-content: space-between; align-items: baseline; gap: .5em; font-weight: bold; }
+  #previewLabel small { font-weight: normal; }
+  #preview { aspect-ratio: 16 / 9; width: 100%; flex: none; border: 1px solid #555; border-radius: .25em; cursor: pointer;
+             background: #2b2b2b repeating-conic-gradient(#3a3a3a 0 25%, #2b2b2b 0 50%) 0 0 / 1.5em 1.5em; }
+  .grp { border: 1px solid #b5b5b5; border-radius: .3em; padding: .6em; display: grid; gap: .45em; background: #fafafa; }
+  .grp > b { color: #333; }
+  .btn-go { background: #1f5fd1; color: #fff; border: 1px solid #0b3a9c; }
+  .btn-tk { background: #c78a00; color: #fff; border: 1px solid #8a5f00; }
+
+  /* ---------- columna derecha: pestañas ---------- */
+  .right { display: flex; flex-direction: column; min-height: 0; }
+  .tabbar { display: flex; align-items: flex-end; justify-content: space-between; gap: .5em; border-bottom: .15em solid #4a6fb0; }
+  .tabs { display: flex; flex-wrap: wrap; gap: .15em; min-width: 0; }
+  .tabbtn { padding: .5em .6em; white-space: nowrap; border: 1px solid #aaa; border-bottom: none; border-radius: .4em .4em 0 0; background: #dcdcdc; font-weight: bold; }
+  .tabbtn.active { background: #4a6fb0; color: #fff; border-color: #4a6fb0; }
+  .langs { display: flex; gap: .3em; padding-bottom: .3em; }
+  .langbtn { padding: .2em .65em; font-weight: bold; background: #e4e4e4; border: 1px solid #999; border-radius: .25em; }
   .langbtn.active { background: #1f5fd1; color: #fff; border-color: #0b3a9c; }
 
-  /* vista previa (no se muestra en la pantalla compartida) */
-  #preview { aspect-ratio: 16 / 9; width: 100%; border: 1px solid #555; border-radius: 3px; cursor: pointer;
-             background: #2b2b2b repeating-conic-gradient(#3a3a3a 0 25%, #2b2b2b 0 50%) 0 0 / 20px 20px; }
-  #previewLabel { display: flex; justify-content: space-between; font-weight: bold; }
-  #previewLabel small { font-weight: normal; }
+  .tab { display: none; padding: 1em .3em; gap: .9em; align-content: start; overflow-y: auto; flex: 1; min-height: 0; }
+  .tab.active { display: grid; }
+
+  /* selector de posición con miniaturas */
+  .poswrap { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45em; margin-top: .25em; }
+  .posbtn { padding: .3em; background: #e8e8e8; border: .15em solid #aaa; border-radius: .3em; }
+  .posbtn.active { border-color: #1f5fd1; background: #dbe7fb; }
+  .mini { position: relative; height: 2.4em; background: #333; border-radius: .15em; }
+  .mini i { position: absolute; height: .55em; background: #5da0ff; border-radius: .25em; }
+  .p-tl i, .p-t i, .p-tr i { top: .3em; }
+  .p-bl i, .p-b i, .p-br i { bottom: .3em; }
+  .p-t i, .p-b i { left: .3em; right: .3em; }
+  .p-tl i, .p-bl i { left: .3em; width: 55%; }
+  .p-tr i, .p-br i { right: .3em; width: 55%; }
+
+  #logoPreview { height: 3.8em; display: none; align-items: center; justify-content: center; background: #ddd; border: 1px solid #aaa; }
+  #logoImg { max-height: 3.4em; max-width: 100%; }
+  .colors { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6em; }
+  .colors label { text-align: center; }
+  input[type=color] { width: 100%; height: 2.6em; padding: 0; cursor: pointer; }
+  input[type=range] { padding: 0; }
+  #prefixCustom { display: none; margin-top: .3em; }
+  textarea { resize: vertical; min-height: 4.5em; }
 </style>
 </head>
 <body>
-<div class="body">
-  <div class="top">
-    <button class="langbtn" id="langEs" title="Español">ES</button>
-    <button class="langbtn" id="langEn" title="English">EN</button>
-  </div>
-  <div>
-    <div id="previewLabel"><span data-i18n="preview"></span><small data-i18n="previewHint"></small></div>
-    <div class="stage" id="preview">
-      <div class="lower static">
-        <div class="lt-logo"><span class="lt-logo-text">TV</span><img class="lt-logo-img" alt=""></div>
-        <div class="lt-bar">
-          <div class="lt-pre"></div>
-          <div class="lt-title"></div>
-        </div>
+<div class="app">
+
+  <!-- ===== Izquierda: vista previa + acciones siempre a mano ===== -->
+  <aside class="left">
+    <div>
+      <div id="previewLabel"><span data-i18n="preview"></span><small data-i18n="previewHint"></small></div>
+      <div id="preview"></div>
+    </div>
+
+    <div class="grp">
+      <b data-i18n="grpGraphic"></b>
+      <div class="row">
+        <button id="go" class="btn-go" data-i18n="go"></button>
+        <button id="stop" data-i18n="stop"></button>
       </div>
     </div>
-  </div>
-  <label><span data-i18n="prefix"></span>
-    <select id="prefix"></select>
-  </label>
-  <label><span data-i18n="show"></span>
-    <input id="show" type="text" autocomplete="off">
-  </label>
-  <label><span data-i18n="display"></span>
-    <select id="display"></select>
-  </label>
-  <label><span data-i18n="logoText"></span>
-    <input id="logo" type="text" value="TV" maxlength="6">
-  </label>
-  <div class="row">
-    <button id="pickLogo" data-i18n="pickLogo"></button>
-    <button id="clearLogo" data-i18n="clearLogo"></button>
-  </div>
-  <div id="logoPreview"><img id="logoImg" alt=""></div>
-  <div class="colors">
-    <label><span data-i18n="cBar"></span> <input id="cBar" type="color" value="#1f5fd1"></label>
-    <label><span data-i18n="cPre"></span> <input id="cPre" type="color" value="#ffd84a"></label>
-    <label><span data-i18n="cTitle"></span> <input id="cTitle" type="color" value="#ffffff"></label>
-    <label><span data-i18n="cLogo"></span> <input id="cLogo" type="color" value="#f5a800"></label>
-  </div>
-  <button id="resetColors" data-i18n="resetColors"></button>
-  <label><span data-i18n="dur"></span>
-    <input id="dur" type="number" min="0" value="8">
-  </label>
-  <div class="row">
-    <button id="go" data-i18n="go"></button>
-    <button id="stop" data-i18n="stop"></button>
-  </div>
-  <button id="quit" data-i18n="quit"></button>
-  <small data-i18n="hint"></small>
+    <div class="grp">
+      <b data-i18n="grpTicker"></b>
+      <div class="row">
+        <button id="tkGo" class="btn-tk" data-i18n="tkShow"></button>
+        <button id="tkStop" data-i18n="tkHide"></button>
+      </div>
+    </div>
+
+    <small data-i18n="hint"></small>
+    <button id="quit" data-i18n="quit"></button>
+  </aside>
+
+  <!-- ===== Derecha: pestañas ===== -->
+  <main class="right">
+    <div class="tabbar">
+      <div class="tabs">
+        <button class="tabbtn" data-tab="titles" data-i18n="tabTitles"></button>
+        <button class="tabbtn" data-tab="ticker" data-i18n="tabTicker"></button>
+        <button class="tabbtn" data-tab="look" data-i18n="tabLook"></button>
+        <button class="tabbtn" data-tab="anim" data-i18n="tabAnim"></button>
+        <button class="tabbtn" data-tab="settings" data-i18n="tabSettings"></button>
+      </div>
+      <div class="langs">
+        <button class="langbtn" id="langEs" title="Español">ES</button>
+        <button class="langbtn" id="langEn" title="English">EN</button>
+      </div>
+    </div>
+
+    <!-- Títulos: lo que cambia con más frecuencia -->
+    <section class="tab" id="tab-titles">
+      <label><span data-i18n="style"></span><select id="style"></select></label>
+      <div>
+        <b data-i18n="position"></b>
+        <div class="poswrap" id="poswrap">
+          <button class="posbtn p-tl" data-pos="tl"><div class="mini p-tl"><i></i></div></button>
+          <button class="posbtn p-t"  data-pos="t"><div class="mini p-t"><i></i></div></button>
+          <button class="posbtn p-tr" data-pos="tr"><div class="mini p-tr"><i></i></div></button>
+          <button class="posbtn p-bl" data-pos="bl"><div class="mini p-bl"><i></i></div></button>
+          <button class="posbtn p-b"  data-pos="b"><div class="mini p-b"><i></i></div></button>
+          <button class="posbtn p-br" data-pos="br"><div class="mini p-br"><i></i></div></button>
+        </div>
+      </div>
+      <label><span id="lblPrefix"></span>
+        <select id="prefix"></select>
+        <input id="prefixCustom" type="text" autocomplete="off">
+      </label>
+      <label><span id="lblName"></span><input id="show" type="text" autocomplete="off"></label>
+      <label id="rowSub"><span data-i18n="sub"></span><input id="sub" type="text" autocomplete="off"></label>
+      <label><span data-i18n="dur"></span><input id="dur" type="number" min="0" value="8"></label>
+    </section>
+
+    <!-- Cintillo desplazable -->
+    <section class="tab" id="tab-ticker">
+      <label><span data-i18n="tkText"></span><textarea id="tkText"></textarea></label>
+      <label><span data-i18n="tkLabel"></span><input id="tkLabel" type="text" maxlength="24" autocomplete="off"></label>
+      <label><span data-i18n="tkPos"></span><select id="tkPos"></select></label>
+      <small data-i18n="tkHint"></small>
+    </section>
+
+    <!-- Colores y logo -->
+    <section class="tab" id="tab-look">
+      <div class="colors">
+        <label><span data-i18n="cBar"></span><input id="cBar" type="color" value="#1f5fd1"></label>
+        <label><span data-i18n="cPre"></span><input id="cPre" type="color" value="#ffd84a"></label>
+        <label><span data-i18n="cTitle"></span><input id="cTitle" type="color" value="#ffffff"></label>
+        <label><span data-i18n="cLogo"></span><input id="cLogo" type="color" value="#f5a800"></label>
+      </div>
+      <button id="resetColors" data-i18n="resetColors"></button>
+      <label><span data-i18n="logoText"></span><input id="logo" type="text" value="TV" maxlength="6"></label>
+      <div class="row">
+        <button id="pickLogo" data-i18n="pickLogo"></button>
+        <button id="clearLogo" data-i18n="clearLogo"></button>
+      </div>
+      <div id="logoPreview"><img id="logoImg" alt=""></div>
+    </section>
+
+    <!-- Animación -->
+    <section class="tab" id="tab-anim">
+      <label><span data-i18n="animIn"></span><select id="animIn"></select></label>
+      <label><span data-i18n="animOut"></span><select id="animOut"></select></label>
+      <label><span><span data-i18n="speed"></span>: <span id="speedVal"></span></span>
+        <input id="speed" type="range" min="0.3" max="2" step="0.1" value="0.7">
+      </label>
+      <button id="playAnim" data-i18n="playAnim"></button>
+    </section>
+
+    <!-- Ajustes -->
+    <section class="tab" id="tab-settings">
+      <label><span data-i18n="display"></span><select id="display"></select></label>
+      <small data-i18n="displayHint"></small>
+    </section>
+  </main>
 </div>
+
 <script src="lower.js"></script>
 <script>
   const $ = id => document.getElementById(id);
@@ -90,46 +182,76 @@
   // ---------- Idiomas ----------
   const I18N = {
     es: {
-      preview: 'Vista previa', previewHint: '(clic para repetir la animación)',
-      previewShow: 'Nombre de la serie',
-      prefix: 'Frase',
-      phrases: ['A continuación', 'Seguimos con', 'Regresamos con', 'Más tarde', 'Próximamente', 'Esta noche', 'Estás viendo'],
-      show: 'Serie / programa',
-      showPh: 'Ej: Los Simpson',
-      display: 'Mostrar en',
-      screen: 'Pantalla',
-      main: 'principal',
-      logoText: 'Logo del canal (texto)',
-      pickLogo: '🖼 Elegir imagen de logo…',
-      clearLogo: 'Quitar',
-      cBar: 'Barra', cPre: 'Frase', cTitle: 'Título', cLogo: 'Logo',
-      resetColors: 'Restaurar colores',
-      dur: 'Duración (segundos, 0 = manual)',
-      go: '▶ Mostrar (Enter)',
-      stop: '■ Ocultar (Esc)',
+      preview: 'Vista previa', previewHint: '(clic para probar entrada y salida)', previewShow: 'Nombre de la serie',
+      grpGraphic: 'Cortinilla / gráfico', grpTicker: 'Cintillo desplazable',
+      go: '▶ Mostrar (Enter)', stop: '■ Ocultar (Esc)', tkShow: '▶ Mostrar cintillo', tkHide: '■ Ocultar cintillo',
       quit: 'Cerrar cortinilla',
-      hint: 'La cortinilla aparece sobre la pantalla elegida, sin bloquear el ratón.'
+      hint: 'Los gráficos aparecen sobre la pantalla elegida sin bloquear el ratón. La vista previa no se ve en la pantalla compartida.',
+      tabTitles: 'Títulos', tabTicker: 'Cintillo', tabLook: 'Colores y logo', tabAnim: 'Animación', tabSettings: 'Ajustes',
+      style: 'Estilo', position: 'Posición',
+      styles: {
+        bumper: { label: 'Cortinilla de series', prefix: 'Frase', name: 'Serie / programa', namePh: 'Ej: Los Simpson',
+          phrases: ['A continuación', 'Seguimos con', 'Regresamos con', 'Más tarde', 'Próximamente', 'Esta noche', 'Estás viendo'] },
+        news: { label: 'Noticiero', prefix: 'Etiqueta', name: 'Titular / nombre', namePh: 'Ej: Juan Pérez',
+          phrases: ['En vivo', 'Última hora', 'Desde el lugar', 'Exclusivo', 'Informe especial', 'Entrevista', 'Resumen'] },
+        morning: { label: 'Matutino', prefix: 'Etiqueta', name: 'Título / invitado', namePh: 'Ej: Receta de la abuela',
+          phrases: ['Hoy en el programa', 'Nuestro invitado', 'Receta del día', 'El clima', 'Consejo del día', 'Sorteo', 'Cocina'] },
+        sponsor: { label: 'Auspicio', prefix: 'Frase', name: 'Auspiciante', namePh: 'Ej: Coca-Cola',
+          subLabel: 'Serie (para la frase con {serie})',
+          phrases: ['Este programa es auspiciado por', '{serie} es auspiciado por', 'Esta transmisión es auspiciada por', 'Con el auspicio de', 'Presentado por'] }
+      },
+      fallbackShow: 'Este programa',
+      custom: '✏ Personalizada…', customPh: 'Escribe tu propio texto',
+      sub: 'Subtítulo (cargo, lugar…)', dur: 'Duración (segundos, 0 = manual)',
+      tkText: 'Texto del cintillo', tkTextPh: 'Escribe aquí el texto que se desplazará…', tkLabel: 'Etiqueta del cintillo',
+      tkLabelDefault: 'ÚLTIMA HORA', tkPos: 'Posición del cintillo', tkTop: 'Arriba', tkBottom: 'Abajo',
+      tkHint: 'El cintillo se queda en pantalla hasta que lo ocultes. Si hay una cortinilla en el mismo lado, se sube para no taparse.',
+      cBar: 'Barra', cPre: 'Etiqueta', cTitle: 'Título', cLogo: 'Logo', resetColors: 'Restaurar colores',
+      logoText: 'Logo del canal (texto)', pickLogo: '🖼 Elegir imagen de logo…', clearLogo: 'Quitar',
+      animIn: 'Entrada', animOut: 'Salida', speed: 'Velocidad (duración)', playAnim: '▶ Probar en la vista previa',
+      animInList: [['auto', 'Automática (según posición)'], ['left', 'Desde la izquierda'], ['right', 'Desde la derecha'],
+        ['up', 'Sube'], ['down', 'Baja'], ['fade', 'Desvanecer'], ['zoom', 'Zoom'], ['bounce', 'Rebote'], ['wipe', 'Barrido (revelado)']],
+      animOutList: [['auto', 'Automática (según posición)'], ['left', 'Hacia la izquierda'], ['right', 'Hacia la derecha'],
+        ['up', 'Sube'], ['down', 'Baja'], ['fade', 'Desvanecer'], ['zoom', 'Zoom'], ['wipe', 'Barrido (cierre)']],
+      display: 'Mostrar en', displayHint: 'Si conectas otro monitor con la app abierta, abre este desplegable para actualizar la lista.',
+      screen: 'Pantalla', main: 'principal',
+      posNames: { tl: 'Arriba izquierda', t: 'Arriba, ancho completo', tr: 'Arriba derecha', bl: 'Abajo izquierda', b: 'Abajo, ancho completo', br: 'Abajo derecha' }
     },
     en: {
-      preview: 'Preview', previewHint: '(click to replay the animation)',
-      previewShow: 'Show name',
-      prefix: 'Phrase',
-      phrases: ['Up next', 'Coming up', 'Back to', 'Later tonight', 'Coming soon', 'Tonight', "You're watching"],
-      show: 'Show / series',
-      showPh: 'E.g. The Simpsons',
-      display: 'Show on',
-      screen: 'Screen',
-      main: 'main',
-      logoText: 'Channel logo (text)',
-      pickLogo: '🖼 Choose logo image…',
-      clearLogo: 'Remove',
-      cBar: 'Bar', cPre: 'Phrase', cTitle: 'Title', cLogo: 'Logo',
-      resetColors: 'Reset colors',
-      dur: 'Duration (seconds, 0 = manual)',
-      go: '▶ Show (Enter)',
-      stop: '■ Hide (Esc)',
+      preview: 'Preview', previewHint: '(click to test in and out)', previewShow: 'Show name',
+      grpGraphic: 'Bumper / graphic', grpTicker: 'Scrolling ticker',
+      go: '▶ Show (Enter)', stop: '■ Hide (Esc)', tkShow: '▶ Show ticker', tkHide: '■ Hide ticker',
       quit: 'Close overlay',
-      hint: 'The overlay appears on the chosen screen and never blocks the mouse.'
+      hint: 'Graphics appear on the chosen screen and never block the mouse. The preview is not visible in the shared screen.',
+      tabTitles: 'Titles', tabTicker: 'Ticker', tabLook: 'Colors & logo', tabAnim: 'Animation', tabSettings: 'Settings',
+      style: 'Style', position: 'Position',
+      styles: {
+        bumper: { label: 'Series bumper', prefix: 'Phrase', name: 'Show / series', namePh: 'E.g. The Simpsons',
+          phrases: ['Up next', 'Coming up', 'Back to', 'Later tonight', 'Coming soon', 'Tonight', "You're watching"] },
+        news: { label: 'News', prefix: 'Tag', name: 'Headline / name', namePh: 'E.g. John Smith',
+          phrases: ['Live', 'Breaking news', 'On location', 'Exclusive', 'Special report', 'Interview', 'Recap'] },
+        morning: { label: 'Morning show', prefix: 'Tag', name: 'Title / guest', namePh: "E.g. Grandma's recipe",
+          phrases: ["On today's show", 'Our guest', 'Recipe of the day', 'Weather', 'Tip of the day', 'Giveaway', 'Cooking'] },
+        sponsor: { label: 'Sponsor', prefix: 'Phrase', name: 'Sponsor', namePh: 'E.g. Coca-Cola',
+          subLabel: 'Show (for the {show} phrase)',
+          phrases: ['This program is sponsored by', '{show} is sponsored by', 'This broadcast is sponsored by', 'Brought to you by', 'Presented by'] }
+      },
+      fallbackShow: 'This program',
+      custom: '✏ Custom…', customPh: 'Type your own text',
+      sub: 'Subtitle (role, place…)', dur: 'Duration (seconds, 0 = manual)',
+      tkText: 'Ticker text', tkTextPh: 'Type the text that will scroll here…', tkLabel: 'Ticker label',
+      tkLabelDefault: 'BREAKING', tkPos: 'Ticker position', tkTop: 'Top', tkBottom: 'Bottom',
+      tkHint: 'The ticker stays on screen until you hide it. A graphic on the same side moves up so they never overlap.',
+      cBar: 'Bar', cPre: 'Tag', cTitle: 'Title', cLogo: 'Logo', resetColors: 'Reset colors',
+      logoText: 'Channel logo (text)', pickLogo: '🖼 Choose logo image…', clearLogo: 'Remove',
+      animIn: 'Enter', animOut: 'Exit', speed: 'Speed (duration)', playAnim: '▶ Test in the preview',
+      animInList: [['auto', 'Automatic (by position)'], ['left', 'From the left'], ['right', 'From the right'],
+        ['up', 'Rise'], ['down', 'Drop'], ['fade', 'Fade'], ['zoom', 'Zoom'], ['bounce', 'Bounce'], ['wipe', 'Wipe (reveal)']],
+      animOutList: [['auto', 'Automatic (by position)'], ['left', 'To the left'], ['right', 'To the right'],
+        ['up', 'Rise'], ['down', 'Drop'], ['fade', 'Fade'], ['zoom', 'Zoom'], ['wipe', 'Wipe (close)']],
+      display: 'Show on', displayHint: 'If you plug in another monitor while the app is open, open this menu to refresh the list.',
+      screen: 'Screen', main: 'main',
+      posNames: { tl: 'Top left', t: 'Top, full width', tr: 'Top right', bl: 'Bottom left', b: 'Bottom, full width', br: 'Bottom right' }
     }
   };
 
@@ -137,22 +259,34 @@
   try { lang = localStorage.getItem('cortinilla-lang') || (navigator.language.startsWith('en') ? 'en' : 'es'); } catch (e) {}
   if (!I18N[lang]) lang = 'es';
   const t = () => I18N[lang];
+  const styleKey = () => $('style').value || 'bumper';
+  const st = () => t().styles[styleKey()];
 
-  let prefixIndex = 0;
-  try {
-    const s = JSON.parse(localStorage.getItem('cortinilla') || '{}');
-    if (Number.isInteger(s.prefixIndex)) prefixIndex = s.prefixIndex;
-    if (s.logo) $('logo').value = s.logo;
-    if (s.dur != null) $('dur').value = s.dur;
-  } catch (e) {}
+  // reconstruye un <select> conservando el valor elegido
+  function fillSelect(el, items) {
+    const prev = el.value;
+    el.innerHTML = items.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+    if (items.some(([v]) => String(v) === prev)) el.value = prev;
+  }
 
   let displaysCache = null;
   function renderDisplays() {
     if (!displaysCache) return;
-    $('display').innerHTML = displaysCache.displays
-      .map((d, i) => `<option value="${d.id}">${t().screen} ${i + 1} (${d.size})${d.primary ? ' - ' + t().main : ''}</option>`)
-      .join('');
+    fillSelect($('display'), displaysCache.displays.map((d, i) =>
+      [d.id, `${t().screen} ${i + 1} (${d.size})${d.primary ? ' - ' + t().main : ''}`]));
     $('display').value = displaysCache.current;
+  }
+
+  // textos que dependen del estilo elegido
+  function refreshStyle() {
+    const s = st();
+    $('lblPrefix').textContent = s.prefix;
+    $('lblName').textContent = s.name;
+    $('show').placeholder = s.namePh;
+    fillSelect($('prefix'), [...s.phrases.map((p, i) => [i, p]), ['-1', t().custom]]);
+    $('prefixCustom').style.display = $('prefix').value === '-1' ? 'block' : 'none';
+    $('rowSub').style.display = styleKey() === 'bumper' ? 'none' : '';
+    $('rowSub').firstElementChild.textContent = s.subLabel || t().sub;
   }
 
   function applyLang() {
@@ -163,60 +297,129 @@
       const v = t()[el.dataset.i18n];
       if (typeof v === 'string') el.textContent = v;
     });
-    $('prefix').innerHTML = t().phrases.map((p, i) => `<option value="${i}">${p}</option>`).join('');
-    $('prefix').value = prefixIndex;
-    $('show').placeholder = t().showPh;
+    fillSelect($('style'), Object.entries(t().styles).map(([k, s]) => [k, s.label]));
+    fillSelect($('animIn'), t().animInList);
+    fillSelect($('animOut'), t().animOutList);
+    fillSelect($('tkPos'), [['bottom', t().tkBottom], ['top', t().tkTop]]);
+    document.querySelectorAll('.posbtn').forEach(b => { b.title = t().posNames[b.dataset.pos]; });
+    $('prefixCustom').placeholder = t().customPh;
+    $('tkText').placeholder = t().tkTextPh;
+    refreshStyle();
     renderDisplays();
     updatePreview();
   }
 
   function setLang(l) {
+    // si la etiqueta del cintillo era la de fábrica, se traduce también
+    const defaults = [I18N.es.tkLabelDefault, I18N.en.tkLabelDefault];
+    const wasDefault = !$('tkLabel').value || defaults.includes($('tkLabel').value);
     lang = l;
     try { localStorage.setItem('cortinilla-lang', lang); } catch (e) {}
+    if (wasDefault) $('tkLabel').value = t().tkLabelDefault;
     applyLang();
   }
   $('langEs').onclick = () => setLang('es');
   $('langEn').onclick = () => setLang('en');
-  $('prefix').onchange = () => { prefixIndex = Number($('prefix').value); updatePreview(); };
 
-  // ---------- Vista previa ----------
-  const stage = $('preview');
-  const previewLower = stage.querySelector('.lower');
+  // ---------- Pestañas ----------
+  let tab = 'titles';
+  function setTab(name) {
+    tab = name;
+    document.querySelectorAll('.tabbtn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    document.querySelectorAll('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
+    try { localStorage.setItem('cortinilla-tab', name); } catch (e) {}
+  }
+  document.querySelectorAll('.tabbtn').forEach(b => { b.onclick = () => setTab(b.dataset.tab); });
+
+  // ---------- Posición ----------
+  let pos = 'b';
+  function setPos(p) {
+    pos = p;
+    document.querySelectorAll('.posbtn').forEach(b => b.classList.toggle('active', b.dataset.pos === p));
+    updatePreview();
+  }
+  document.querySelectorAll('.posbtn').forEach(b => { b.onclick = () => setPos(b.dataset.pos); });
+
+  $('style').onchange = () => {
+    if ($('prefix').value !== '-1') $('prefix').value = '0'; // nuevo estilo → primera frase de su lista
+    refreshStyle();
+    if ($('prefix').value !== '-1') $('prefix').value = '0';
+    updatePreview();
+  };
+  $('prefix').onchange = () => {
+    $('prefixCustom').style.display = $('prefix').value === '-1' ? 'block' : 'none';
+    if ($('prefix').value === '-1') $('prefixCustom').focus();
+  };
+
+  // ---------- Datos actuales ----------
+  function prefixText() {
+    const v = $('prefix').value;
+    const raw = v === '-1' ? $('prefixCustom').value.trim() : (st().phrases[Number(v)] || '');
+    // en "Auspicio", {serie} / {show} se reemplaza por el campo de la serie
+    return raw.replace(/\{(serie|show)\}/gi, $('sub').value.trim() || t().fallbackShow);
+  }
+  const colors = () => ({ bar: $('cBar').value, pre: $('cPre').value, title: $('cTitle').value, logo: $('cLogo').value });
+  const speed = () => parseFloat($('speed').value) || 0.7;
+
   function currentData() {
     return {
-      prefix: t().phrases[prefixIndex],
+      style: styleKey(), pos,
+      prefix: prefixText(),
       name: $('show').value.trim(),
-      logo: $('logo').value || 'TV',
-      logoImg,
-      colors: { bar: $('cBar').value, pre: $('cPre').value, title: $('cTitle').value, logo: $('cLogo').value },
+      sub: ['news', 'morning'].includes(styleKey()) ? $('sub').value.trim() : '',
+      logo: $('logo').value || 'TV', logoImg,
+      colors: colors(),
+      animIn: $('animIn').value, animOut: $('animOut').value, speed: speed(),
       dur: parseFloat($('dur').value) || 0
     };
   }
-  function updatePreview() {
-    const d = currentData();
-    Lower.fill(stage, { ...d, name: d.name || t().previewShow });
-  }
-  // clic en la vista previa: repite la animación de entrada
-  stage.onclick = () => {
-    previewLower.className = 'lower';
-    void previewLower.offsetWidth;
-    previewLower.className = 'lower in';
-  };
-  document.addEventListener('input', updatePreview);
+  const currentTicker = () => ({ text: $('tkText').value.trim(), label: $('tkLabel').value.trim(), pos: $('tkPos').value, colors: colors() });
 
-  // ---------- Colores ----------
+  // ---------- Vista previa ----------
+  const stage = $('preview');
+  Lower.mount(stage);
+  let previewTimers = [];
+  const stopPreviewAnim = () => { previewTimers.forEach(clearTimeout); previewTimers = []; };
+
+  function previewData() {
+    const d = currentData();
+    return { ...d, name: d.name || t().previewShow };
+  }
+  function updatePreview() {
+    stopPreviewAnim();
+    Lower.fill(stage, previewData(), 'static');
+    const tk = currentTicker();
+    if (tk.text) Lower.fillTicker(stage, tk, 'static'); else Lower.clearTicker(stage);
+    $('speedVal').textContent = speed().toFixed(1) + ' s';
+    persist();
+  }
+  // prueba: entrada → pausa → salida → vuelve al estado fijo
+  function playPreview() {
+    stopPreviewAnim();
+    Lower.show(stage, previewData());
+    const s = speed();
+    previewTimers.push(setTimeout(() => Lower.hide(stage), (s + 1.6) * 1000));
+    previewTimers.push(setTimeout(updatePreview, (s + 1.6 + s * 0.85 + 0.4) * 1000));
+  }
+  stage.onclick = playPreview;
+  $('playAnim').onclick = playPreview;
+  document.addEventListener('input', updatePreview);
+  document.addEventListener('change', updatePreview);
+
+  // ---------- Preferencias ----------
+  function persist() {
+    try {
+      localStorage.setItem('cortinilla', JSON.stringify({
+        style: $('style').value, pos, prefix: $('prefix').value, prefixCustom: $('prefixCustom').value,
+        logo: $('logo').value, dur: $('dur').value, tkLabel: $('tkLabel').value, tkPos: $('tkPos').value,
+        animIn: $('animIn').value, animOut: $('animOut').value, speed: $('speed').value
+      }));
+      localStorage.setItem('cortinilla-colors', JSON.stringify(colors()));
+    } catch (e) {}
+  }
+
   const COLORS = { cBar: '#1f5fd1', cPre: '#ffd84a', cTitle: '#ffffff', cLogo: '#f5a800' };
-  try {
-    const c = JSON.parse(localStorage.getItem('cortinilla-colors') || '{}');
-    for (const k in COLORS) $(k).value = c[k] || COLORS[k];
-  } catch (e) {}
-  const saveColors = () => {
-    const c = {};
-    for (const k in COLORS) c[k] = $(k).value;
-    try { localStorage.setItem('cortinilla-colors', JSON.stringify(c)); } catch (e) {}
-  };
-  for (const k in COLORS) $(k).oninput = saveColors;
-  $('resetColors').onclick = () => { for (const k in COLORS) $(k).value = COLORS[k]; saveColors(); updatePreview(); };
+  $('resetColors').onclick = () => { for (const k in COLORS) $(k).value = COLORS[k]; updatePreview(); };
 
   // ---------- Logo ----------
   var logoImg = null;
@@ -226,7 +429,6 @@
     if (logoImg) $('logoImg').src = logoImg;
     updatePreview();
   }
-  renderLogo();
   $('pickLogo').onclick = async () => {
     const img = await cortinilla.pickLogo();
     if (!img) return;
@@ -250,21 +452,53 @@
 
   // ---------- Mostrar / ocultar ----------
   function show() {
-    const name = $('show').value.trim();
-    if (!name) { $('show').focus(); return; }
-    const data = currentData();
-    try { localStorage.setItem('cortinilla', JSON.stringify({ prefixIndex, logo: data.logo, dur: $('dur').value })); } catch (e) {}
-    cortinilla.show(data);
+    const d = currentData();
+    if (!d.name) { setTab('titles'); $('show').focus(); return; }
+    cortinilla.show(d);
+  }
+  function showTicker() {
+    const tk = currentTicker();
+    if (!tk.text) { setTab('ticker'); $('tkText').focus(); return; }
+    cortinilla.showTicker(tk);
   }
   $('go').onclick = show;
   $('stop').onclick = () => cortinilla.hide();
+  $('tkGo').onclick = showTicker;
+  $('tkStop').onclick = () => cortinilla.hideTicker();
   $('quit').onclick = () => cortinilla.quit();
+
   document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') show();
-    else if (e.key === 'Escape') cortinilla.hide();
+    if (e.target.tagName === 'BUTTON') return; // el botón enfocado ya reacciona a Enter
+    if (e.key === 'Escape') cortinilla.hide();
+    else if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+      if (tab === 'ticker') showTicker(); else show();
+    } else if (e.key === 'Enter' && e.ctrlKey) showTicker();
   });
 
+  // ---------- Arranque ----------
   applyLang();
+  $('tkLabel').value = t().tkLabelDefault;
+  try {
+    const s = JSON.parse(localStorage.getItem('cortinilla') || '{}');
+    if (s.style && t().styles[s.style]) { $('style').value = s.style; refreshStyle(); }
+    if (s.prefix != null && [...$('prefix').options].some(o => o.value === String(s.prefix))) $('prefix').value = s.prefix;
+    if (s.prefixCustom) $('prefixCustom').value = s.prefixCustom;
+    $('prefixCustom').style.display = $('prefix').value === '-1' ? 'block' : 'none';
+    if (s.logo) $('logo').value = s.logo;
+    if (s.dur != null) $('dur').value = s.dur;
+    if (s.tkLabel) $('tkLabel').value = s.tkLabel;
+    if (s.tkPos) $('tkPos').value = s.tkPos;
+    if (s.animIn) $('animIn').value = s.animIn;
+    if (s.animOut) $('animOut').value = s.animOut;
+    if (s.speed) $('speed').value = s.speed;
+    if (s.pos) pos = s.pos;
+    const c = JSON.parse(localStorage.getItem('cortinilla-colors') || '{}');
+    for (const k in COLORS) $(k).value = c[k.replace(/^c/, '').toLowerCase()] || COLORS[k];
+    tab = localStorage.getItem('cortinilla-tab') || 'titles';
+  } catch (e) {}
+  setTab(tab);
+  setPos(pos);
+  renderLogo();
   loadDisplays();
   $('show').focus();
 </script>

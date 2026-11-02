@@ -1,4 +1,4 @@
-# Cortinilla 2004 📺
+# Cortinilla TV 📺
 
 **Español** · [English](#english)
 
@@ -7,13 +7,17 @@ Una cortinilla ("lower third") de televisión al estilo 2004 para tus maratones 
 Es una app de escritorio (Electron) con dos ventanas:
 
 - **Overlay:** ventana transparente, sin bordes y siempre encima, que ocupa la pantalla que elijas. No bloquea el ratón.
-- **Panel de control:** desde ahí eliges la frase, escribes la serie y la muestras.
+- **Panel de control:** vista previa y botones siempre a la izquierda; a la derecha, pestañas (Títulos, Cintillo, Colores y logo, Animación, Ajustes).
 
 ## Características
 
-- Animación de entrada y salida con destello, estilo TV de la época.
+- **Cuatro estilos** de gráfico: *Cortinilla de series*, *Noticiero*, *Matutino* y *Auspicio* (con frases como "Este programa es auspiciado por…" o "[Serie] es auspiciado por…").
+- **Posición a elegir**: esquinas o barra de ancho completo, arriba o abajo.
+- **Generador de caracteres**: etiqueta, título y subtítulo (por ejemplo nombre y cargo), con frases predefinidas o texto propio.
+- **Cintillo desplazable** tipo noticiero, con etiqueta propia ("ÚLTIMA HORA"), arriba o abajo; se apila con la cortinilla sin taparla.
+- **Barrido de entrada y salida configurable**: desde un lado, sube/baja, desvanecer, zoom, rebote o revelado, con velocidad ajustable.
 - Frases predefinidas en **español e inglés**: cambia de idioma con los botones **ES / EN** (el panel también cambia).
-- **Vista previa** en el propio panel (no aparece en la pantalla compartida) para elegir bien los colores.
+- **Vista previa** en el propio panel (no aparece en la pantalla compartida) para elegir colores y probar la entrada y salida con un clic.
 - Elección de la **pantalla** donde aparece (por defecto, la segunda si existe).
 - **Logo personalizado**: imagen propia (PNG, JPG, GIF, WebP o SVG) o texto corto.
 - **Colores** configurables para la barra, la frase, el título y el logo.
@@ -42,8 +46,8 @@ En Windows también puedes hacer doble clic en `iniciar.bat`.
 
 | Tecla | Acción |
 | ----- | ------ |
-| Enter | Mostrar la cortinilla |
-| Esc   | Ocultarla |
+| Enter | Mostrar la cortinilla (en la pestaña Cintillo, mostrar el cintillo) |
+| Esc   | Ocultar la cortinilla |
 
 ### Limitaciones
 
@@ -61,9 +65,9 @@ En Windows también puedes hacer doble clic en `iniciar.bat`.
 | ------- | ----------- |
 | `main.js` | Proceso principal de Electron: crea las ventanas y gestiona pantallas y logo. |
 | `preload.js` | Puente seguro entre el panel/overlay y el proceso principal. |
-| `panel.html` | Panel de control (idiomas ES/EN y vista previa). |
+| `panel.html` | Panel de control con pestañas, idiomas ES/EN y vista previa. |
 | `overlay.html` | La cortinilla que se dibuja sobre la pantalla. |
-| `lower.css`, `lower.js` | Estilo y lógica de la cortinilla, compartidos por el overlay y la vista previa. |
+| `lower.css`, `lower.js` | Estilos, animaciones y lógica de los gráficos y el cintillo, compartidos por el overlay y la vista previa. |
 | `index.html` | Versión independiente para OBS. |
 
 ## Privacidad
@@ -79,13 +83,17 @@ A 2004-style TV lower-third for your screen-sharing series nights: glossy blue b
 It's a desktop app (Electron) with two windows:
 
 - **Overlay:** a transparent, frameless, always-on-top window covering the screen you choose. It never blocks the mouse.
-- **Control panel:** pick the phrase, type the show and display it.
+- **Control panel:** preview and buttons always on the left; tabs on the right (Titles, Ticker, Colors & logo, Animation, Settings).
 
 ### Features
 
-- Slide-in/out animation with a shine effect.
+- **Four graphic styles**: *Series bumper*, *News*, *Morning show* and *Sponsor* (phrases like "This program is sponsored by…" or "[Show] is sponsored by…").
+- **Choose the position**: corners or full-width bar, top or bottom.
+- **Character generator**: tag, title and subtitle (e.g. name and role), with preset phrases or your own text.
+- **Scrolling news ticker** with its own label ("BREAKING"), top or bottom; it stacks with the bumper without covering it.
+- **Customizable enter/exit animation**: from a side, rise/drop, fade, zoom, bounce or wipe, with adjustable speed.
 - Preset phrases in **Spanish and English**: switch with the **ES / EN** buttons (the panel UI changes too).
-- Built-in **preview** in the panel (never shown on the shared screen) to fine-tune colors.
+- Built-in **preview** in the panel (never shown on the shared screen) to fine-tune colors and test the enter/exit with one click.
 - Choose which **screen** it appears on (defaults to the second one if present).
 - **Custom logo**: your own image (PNG, JPG, GIF, WebP or SVG) or short text.
 - Customizable **colors** for the bar, phrase, title and logo.

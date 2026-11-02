@@ -37,9 +37,11 @@ function createOverlay() {
 }
 
 function createPanel() {
+  const work = screen.getPrimaryDisplay().workAreaSize;
   panel = new BrowserWindow({
-    width: 420, height: Math.min(860, screen.getPrimaryDisplay().workAreaSize.height), resizable: false, title: 'Cortinilla 2004',
-    autoHideMenuBar: true,
+    width: Math.min(920, work.width), height: Math.min(540, work.height),
+    minWidth: 820, minHeight: 480, resizable: true, title: 'Cortinilla TV',
+    useContentSize: true, autoHideMenuBar: true,
     webPreferences: { preload: path.join(__dirname, 'preload.js') }
   });
   panel.loadFile('panel.html');
@@ -64,6 +66,8 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 ipcMain.on('show', (_e, data) => overlay && overlay.webContents.send('show', data));
+ipcMain.on('ticker', (_e, data) => overlay && overlay.webContents.send('ticker', data));
+ipcMain.on('ticker-hide', () => overlay && overlay.webContents.send('ticker-hide'));
 ipcMain.handle('get-displays', () => {
   const primary = screen.getPrimaryDisplay();
   const current = overlay && screen.getDisplayMatching(overlay.getBounds());
