@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cortinilla TV</title>
+<link rel="stylesheet" href="../shared/lower.css">
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== Izquierda: vista previa + acciones siempre a mano ===== -->
+  <aside class="left">
+    <div>
+      <div id="previewLabel"><span data-i18n="preview"></span><small data-i18n="previewHint"></small></div>
+      <div id="preview"></div>
+    </div>
+
+    <div class="modes">
+      <b data-i18n="modeTitle"></b>
+      <div class="row">
+        <button id="modeFull" class="modebtn" data-i18n="modeFull"></button>
+        <button id="modeCapture" class="modebtn" data-i18n="modeCapture"></button>
+      </div>
+      <small id="modeHint"></small>
+    </div>
+
+    <small data-i18n="hint"></small>
+    <button id="quit" data-i18n="quit"></button>
+  </aside>
+
+  <!-- ===== Derecha: pestañas ===== -->
+  <main class="right">
+    <div class="tabbar">
+      <div class="tabs">
+        <button class="tabbtn" data-tab="titles" data-i18n="tabTitles"></button>
+        <button class="tabbtn" data-tab="ticker" data-i18n="tabTicker"></button>
+        <button class="tabbtn" data-tab="look" data-i18n="tabLook"></button>
+        <button class="tabbtn" data-tab="anim" data-i18n="tabAnim"></button>
+        <button class="tabbtn" data-tab="scene" data-i18n="tabScene"></button>
+        <button class="tabbtn" data-tab="signoff" data-i18n="tabSignoff"></button>
+        <button class="tabbtn" data-tab="settings" data-i18n="tabSettings"></button>
+      </div>
+      <div class="langs">
+        <button class="langbtn" id="langEs" title="Español">ES</button>
+        <button class="langbtn" id="langEn" title="English">EN</button>
+      </div>
+    </div>
+
+    <!-- Títulos: lo que cambia con más frecuencia -->
+    <section class="tab" id="tab-titles">
+      <label><span data-i18n="style"></span><select id="style"></select></label>
+      <div>
+        <b data-i18n="position"></b>
+        <div class="poswrap" id="poswrap">
+          <button class="posbtn p-tl" data-pos="tl"><div class="mini p-tl"><i></i></div></button>
+          <button class="posbtn p-t"  data-pos="t"><div class="mini p-t"><i></i></div></button>
+          <button class="posbtn p-tr" data-pos="tr"><div class="mini p-tr"><i></i></div></button>
+          <button class="posbtn p-bl" data-pos="bl"><div class="mini p-bl"><i></i></div></button>
+          <button class="posbtn p-b"  data-pos="b"><div class="mini p-b"><i></i></div></button>
+          <button class="posbtn p-br" data-pos="br"><div class="mini p-br"><i></i></div></button>
+        </div>
+      </div>
+      <label><span id="lblPrefix"></span>
+        <select id="prefix"></select>
+        <input id="prefixCustom" type="text" autocomplete="off">
+      </label>
+      <label><span id="lblName"></span><input id="show" type="text" autocomplete="off"></label>
+      <label id="rowSub"><span data-i18n="sub"></span><input id="sub" type="text" autocomplete="off"></label>
+      <label><span data-i18n="dur"></span><input id="dur" type="number" min="0" value="8"></label>
+      <div class="row actions">
+        <button id="go" class="btn-go" data-i18n="go"></button>
+        <button id="stop" data-i18n="stop"></button>
+      </div>
+    </section>
+
+    <!-- Cintillo desplazable -->
+    <section class="tab" id="tab-ticker">
+      <label><span data-i18n="tkText"></span><textarea id="tkText"></textarea></label>
+      <label><span data-i18n="tkLabel"></span>
+        <select id="tkLabelSel"></select>
+        <input id="tkLabelCustom" type="text" maxlength="24" autocomplete="off">
+      </label>
+      <label><span data-i18n="tkIcon"></span><select id="tkIcon"></select></label>
+      <label><span data-i18n="tkPos"></span><select id="tkPos"></select></label>
+      <small data-i18n="tkHint"></small>
+      <div class="row actions">
+        <button id="tkGo" class="btn-tk" data-i18n="tkShow"></button>
+        <button id="tkStop" data-i18n="tkHide"></button>
+      </div>
+    </section>
+
+    <!-- Colores y logo -->
+    <section class="tab" id="tab-look">
+      <div class="colors">
+        <label><span data-i18n="cBar"></span><input id="cBar" type="color" value="#1f5fd1"></label>
+        <label><span data-i18n="cPre"></span><input id="cPre" type="color" value="#ffd84a"></label>
+        <label><span data-i18n="cTitle"></span><input id="cTitle" type="color" value="#ffffff"></label>
+        <label><span data-i18n="cLogo"></span><input id="cLogo" type="color" value="#f5a800"></label>
+      </div>
+      <button id="resetColors" data-i18n="resetColors"></button>
+      <label><span data-i18n="logoText"></span><input id="logo" type="text" value="TV" maxlength="6"></label>
+      <button id="pickLogo" data-i18n="pickLogo"></button>
+      <b data-i18n="logoSaved"></b>
+      <div class="gallery" id="logoGallery"></div>
+      <small id="logoMsg"></small>
+    </section>
+
+    <!-- Animación -->
+    <section class="tab" id="tab-anim">
+      <label><span data-i18n="animIn"></span><select id="animIn"></select></label>
+      <label><span data-i18n="animOut"></span><select id="animOut"></select></label>
+      <label><span><span data-i18n="speed"></span>: <span id="speedVal"></span></span>
+        <input id="speed" type="range" min="0.3" max="2" step="0.1" value="0.7">
+      </label>
+      <button id="playAnim" data-i18n="playAnim"></button>
+    </section>
+
+    <!-- Captura: compartir un programa normal con los gráficos encima (solo modo captura) -->
+    <section class="tab" id="tab-scene">
+      <div class="row">
+        <button id="scFull" data-i18n="scFull"></button>
+      </div>
+      <small id="scState"></small>
+      <label><span data-i18n="scAudio"></span><select id="scAudio"></select></label>
+      <label><span data-i18n="scSink"></span><select id="scSink"></select></label>
+      <small id="scNoSink" data-i18n="scNoSink"></small>
+      <label><span><span data-i18n="scDelay"></span>: <span id="scDelayVal"></span></span>
+        <input id="scDelay" type="range" min="0" max="500" step="10" value="0">
+      </label>
+      <div class="row" style="align-items:center">
+        <b data-i18n="scSources" style="flex:1"></b>
+        <button id="scRefresh" data-i18n="scRefresh" style="flex:none"></button>
+      </div>
+      <div class="sources" id="scSources"></div>
+      <small id="scNow"></small>
+      <small data-i18n="scHint"></small>
+    </section>
+
+    <!-- Canal cerrado -->
+    <section class="tab" id="tab-signoff">
+      <label><span data-i18n="soType"></span><select id="soType"></select></label>
+      <label><span data-i18n="soCaption"></span><input id="soCaption" type="text" maxlength="40" autocomplete="off"></label>
+      <label><span data-i18n="soSound"></span><select id="soSound"></select></label>
+      <div class="row actions">
+        <button id="soGo" class="btn-go" data-i18n="soShow"></button>
+        <button id="soStop" data-i18n="soHide"></button>
+      </div>
+      <small data-i18n="soHint"></small>
+    </section>
+
+    <!-- Ajustes -->
+    <section class="tab" id="tab-settings">
+      <label><span data-i18n="display"></span><select id="display"></select></label>
+      <small data-i18n="displayHint"></small>
+      <small id="displayNote" data-i18n="displayNote"></small>
+
+      <div class="cfg">
+        <b data-i18n="cfgTitle"></b>
+        <div class="row">
+          <button id="cfgSave" data-i18n="cfgSave"></button>
+          <button id="cfgLoad" data-i18n="cfgLoad"></button>
+        </div>
+        <button id="cfgReset" data-i18n="cfgReset"></button>
+        <small id="cfgMsg"></small>
+        <small data-i18n="cfgHint"></small>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="../shared/lower.js"></script>
+<script src="i18n.js"></script>
+<script src="panel.js"></script>
+</body>
+</html>

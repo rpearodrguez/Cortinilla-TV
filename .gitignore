@@ -22,3 +22,6 @@ desktop.ini
 .env.*
 *.pem
 *.key
+
+# Ayudante de audio compilado en cada equipo (se genera desde native/ProcessLoopback.cs)
+native/*.exe

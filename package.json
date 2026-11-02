@@ -2,9 +2,13 @@
   "name": "cortinilla-tv",
   "version": "1.0.0",
   "description": "Retro 2004-style TV lower-third overlay for screen sharing / Cortinilla de TV estilo 2004 para pantalla compartida",
-  "main": "main.js",
+  "main": "src/main/main.js",
   "private": true,
   "license": "MIT",
-  "scripts": { "start": "electron ." },
-  "devDependencies": { "electron": "^33.0.0" }
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
 }

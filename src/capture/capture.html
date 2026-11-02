@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Captura - Cortinilla TV</title>
+<link rel="stylesheet" href="../shared/lower.css">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+  /* la ventana elegida se muestra aquí; los gráficos van encima */
+  #vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; display: none; }
+  #idle { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 4vh;
+          text-align: center; color: #777; font: 3vh Tahoma, Verdana, sans-serif; }
+  .stage { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="idle"><span id="idleText">Captura lista.<br>Elige un programa en la pestaña Captura del panel de control.</span></div>
+<video id="vid" autoplay></video>
+<div id="stage"></div>
+
+<script src="../shared/lower.js"></script>
+<script src="../shared/bridge.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const stage = $('stage'), vid = $('vid'), idle = $('idle');
+  Lower.mount(stage);
+  Bridge.attach(stage);
+
+  let stream = null;
+  let audio = null; // { ctx, node }: reproductor del audio del programa elegido
+
+  async function startAudio(sinkId, delayMs) {
+    stopAudio();
+    const ctx = new AudioContext({ sampleRate: 48000, latencyHint: 'interactive' });
+    if (sinkId && ctx.setSinkId) { try { await ctx.setSinkId(sinkId); } catch (e) {} } // dispositivo de salida elegido
+    await ctx.audioWorklet.addModule('pcm-player.js');
+    const node = new AudioWorkletNode(ctx, 'pcm-player', { outputChannelCount: [2] });
+    node.port.postMessage({ type: 'target', frames: Math.round(48000 * (0.06 + (delayMs || 0) / 1000)) });
+    node.connect(ctx.destination);
+    audio = { ctx, node };
+  }
+  function stopAudio() {
+    if (!audio) return;
+    try { audio.node.disconnect(); audio.ctx.close(); } catch (e) {}
+    audio = null;
+  }
+  cortinilla.onSceneAudio(bytes => {
+    if (!audio) return;
+    const data = new Int16Array(bytes.slice().buffer);
+    audio.node.port.postMessage({ type: 'pcm', data }, [data.buffer]);
+  });
+
+  function showIdle(html) {
+    $('idleText').innerHTML = html;
+    idle.style.display = 'flex';
+    vid.style.display = 'none';
+  }
+  function stop() {
+    stopAudio();
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = null;
+    vid.srcObject = null;
+  }
+
+  // captura de una ventana o pantalla elegida en el panel (id de desktopCapturer)
+  cortinilla.onSceneCapture(async ({ id, audio: withAudio, sinkId, delayMs }) => {
+    stop();
+    stopAudio();
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: false, // el audio llega aparte, solo del programa elegido
+        video: { mandatory: { chromeMediaSource: 'desktop', chromeMediaSourceId: id, maxFrameRate: 60 } }
+      });
+    } catch (e) {
+      showIdle('No se pudo capturar la ventana.');
+      cortinilla.sceneNow({ kind: 'error', title: String((e && e.message) || e) });
+      return;
+    }
+    vid.srcObject = stream;
+    vid.muted = true;
+    if (withAudio) startAudio(sinkId, delayMs);
+    vid.play().catch(() => {});
+    idle.style.display = 'none';
+    vid.style.display = 'block';
+    // si la ventana original se cierra, la captura termina sola
+    stream.getVideoTracks()[0].onended = () => {
+      stop();
+      showIdle('La ventana elegida se cerró.<br>Elige otra en el panel de control.');
+      cortinilla.sceneNow({ kind: 'ended' });
+    };
+    cortinilla.sceneNow({ kind: 'live' });
+  });
+
+  cortinilla.onSceneStop(() => {
+    stop();
+    showIdle('Captura lista.<br>Elige un programa en la pestaña Captura del panel de control.');
+  });
+
+  // F alterna pantalla completa cuando esta ventana tiene el foco
+  document.addEventListener('keydown', e => {
+    if (e.key.toLowerCase() === 'f' || e.key === 'F11') cortinilla.sceneFullscreen();
+  });
+</script>
+</body>
+</html>

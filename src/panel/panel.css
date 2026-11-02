@@ -1,0 +1,82 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+/* el tamaño del texto se adapta al tamaño de la ventana; todo lo demás va en em */
+body { font: clamp(12px, min(1.5vw, 2.1vh), 19px) Tahoma, Verdana, sans-serif; background: #f0f0f0; color: #111; }
+input, select, button, textarea { font: inherit; padding: .45em; }
+button { cursor: pointer; }
+label { display: grid; gap: .25em; font-weight: bold; }
+small { color: #555; font-size: .92em; }
+.row { display: flex; gap: .45em; }
+.row > * { flex: 1; min-width: 0; }
+
+.app { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 1.1em; height: 100%; padding: .9em; }
+
+/* ---------- columna izquierda: vista previa y acciones ---------- */
+.left { display: flex; flex-direction: column; gap: .75em; min-height: 0; overflow-y: auto; }
+#previewLabel { display: flex; justify-content: space-between; align-items: baseline; gap: .5em; font-weight: bold; }
+#previewLabel small { font-weight: normal; }
+#preview { aspect-ratio: 16 / 9; width: 100%; flex: none; border: 1px solid #555; border-radius: .25em; cursor: pointer;
+           background: #2b2b2b repeating-conic-gradient(#3a3a3a 0 25%, #2b2b2b 0 50%) 0 0 / 1.5em 1.5em; }
+/* botones de acción: siempre visibles al pie de cada pestaña, aunque haya que hacer scroll */
+.actions { position: sticky; bottom: -1em; padding: .6em 0 1em; margin-top: auto; background: #f0f0f0; }
+.btn-go { background: #1f5fd1; color: #fff; border: 1px solid #0b3a9c; }
+#quit { margin-top: auto; }
+.btn-tk { background: #c78a00; color: #fff; border: 1px solid #8a5f00; }
+
+/* ---------- columna derecha: pestañas ---------- */
+.right { display: flex; flex-direction: column; min-height: 0; }
+.tabbar { display: flex; align-items: flex-end; justify-content: space-between; gap: .5em; border-bottom: .15em solid #4a6fb0; }
+.tabs { display: flex; flex-wrap: wrap; gap: .15em; min-width: 0; }
+.tabbtn { padding: .5em .6em; white-space: nowrap; border: 1px solid #aaa; border-bottom: none; border-radius: .4em .4em 0 0; background: #dcdcdc; font-weight: bold; }
+.tabbtn.active { background: #4a6fb0; color: #fff; border-color: #4a6fb0; }
+.langs { display: flex; gap: .3em; padding-bottom: .3em; }
+.langbtn { padding: .2em .65em; font-weight: bold; background: #e4e4e4; border: 1px solid #999; border-radius: .25em; }
+.langbtn.active { background: #1f5fd1; color: #fff; border-color: #0b3a9c; }
+
+.tab { display: none; padding: 1em .3em; gap: .9em; align-content: start; overflow-y: auto; flex: 1; min-height: 0; }
+.tab.active { display: grid; }
+
+/* selector de posición con miniaturas */
+.poswrap { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45em; margin-top: .25em; }
+.posbtn { padding: .3em; background: #e8e8e8; border: .15em solid #aaa; border-radius: .3em; }
+.posbtn.active { border-color: #1f5fd1; background: #dbe7fb; }
+.mini { position: relative; height: 2.4em; background: #333; border-radius: .15em; }
+.mini i { position: absolute; height: .55em; background: #5da0ff; border-radius: .25em; }
+.p-tl i, .p-t i, .p-tr i { top: .3em; }
+.p-bl i, .p-b i, .p-br i { bottom: .3em; }
+.p-t i, .p-b i { left: .3em; right: .3em; }
+.p-tl i, .p-bl i { left: .3em; width: 55%; }
+.p-tr i, .p-br i { right: .3em; width: 55%; }
+
+/* biblioteca de logos guardados */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(5em, 1fr)); gap: .5em; }
+.logo-item { position: relative; height: 4em; display: flex; align-items: center; justify-content: center; padding: .25em;
+             background: #ddd; border: .15em solid #aaa; border-radius: .3em; cursor: pointer; text-align: center; font-size: .9em; color: #555; }
+.logo-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.logo-item.active { border-color: #1f5fd1; background: #dbe7fb; }
+.logo-item .del { position: absolute; top: -.5em; right: -.5em; width: 1.6em; height: 1.6em; padding: 0; line-height: 1;
+                  display: none; border-radius: 50%; background: #c33; color: #fff; border: 1px solid #800; }
+.logo-item:hover .del { display: block; }
+#logoMsg { color: #b00; min-height: 1.2em; }
+.colors { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6em; }
+.colors label { text-align: center; }
+input[type=color] { width: 100%; height: 2.6em; padding: 0; cursor: pointer; }
+input[type=range] { padding: 0; }
+/* lista de ventanas/pantallas capturables */
+.sources { display: grid; grid-template-columns: repeat(auto-fill, minmax(9em, 1fr)); gap: .5em; }
+.src { padding: .25em; background: #ddd; border: .15em solid #aaa; border-radius: .3em; cursor: pointer; text-align: center; font-size: .85em; }
+.src img { width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: #000; display: block; }
+.src div { margin-top: .2em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.src.active { border-color: #1f5fd1; background: #dbe7fb; }
+.check { display: flex; align-items: center; gap: .5em; }
+#prefixCustom, #tkLabelCustom { display: none; margin-top: .3em; }
+textarea { resize: vertical; min-height: 4.5em; }
+
+/* modos de trabajo: pantalla completa (overlay) o captura (escena) */
+.modes { display: grid; gap: .45em; padding: .6em; border: 1px solid #b5b5b5; border-radius: .3em; background: #fafafa; }
+.modebtn { padding: .6em .3em; font-weight: bold; background: #e4e4e4; border: 1px solid #999; border-radius: .3em; }
+.modebtn.active { background: #1f5fd1; color: #fff; border-color: #0b3a9c; }
+
+/* guardar / cargar / restablecer */
+.cfg { display: grid; gap: .5em; padding-top: .9em; border-top: 1px solid #bbb; }
+#cfgMsg { min-height: 1.2em; }
