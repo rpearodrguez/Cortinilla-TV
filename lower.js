@@ -17,8 +17,16 @@
         <div class="lt-sub"></div>
       </div>
     </div>
+    <div class="signoff">
+      <canvas class="so-noise"></canvas><div class="so-scan"></div>
+      <div class="so-b1"></div><div class="so-b2"></div><div class="so-b3"></div>
+      <div class="so-box">
+        <div class="so-logo"><span class="so-logo-text">TV</span><img class="so-logo-img" alt=""></div>
+        <div class="so-caption"></div>
+      </div>
+    </div>
     <div class="ticker bottom">
-      <div class="tk-label"></div>
+      <div class="tk-label"><span class="tk-icon"></span><span class="tk-label-text"></span></div>
       <div class="tk-track"><div class="tk-text"></div></div>
     </div>`;
 
@@ -97,29 +105,47 @@
     stage.style.setProperty('--tk-t', pos === 'top' && active ? TICKER_H : '0cqh');
   }
 
+  // el desplazamiento depende del ancho del texto y de la etiqueta: se recalcula solo si algo cambió
+  function layoutTicker(stage) {
+    const tk = tickerOf(stage);
+    const txt = tk.querySelector('.tk-text');
+    const track = tk.querySelector('.tk-track');
+    const key = `${txt.textContent}|${track.clientWidth}|${stage.clientWidth}`;
+    if (txt._key === key) return;
+    txt._key = key;
+    const from = track.clientWidth || stage.clientWidth;
+    const to = -txt.offsetWidth;
+    const speed = stage.clientWidth * 0.09; // px por segundo, proporcional al ancho de pantalla
+    txt.style.setProperty('--from', from + 'px');
+    txt.style.setProperty('--to', to + 'px');
+    txt.style.animation = 'none';
+    void txt.offsetWidth;
+    txt.style.animation = `tkscroll ${Math.max(4, (from - to) / speed)}s linear infinite`;
+  }
+
   function fillTicker(stage, t, state) {
     const tk = tickerOf(stage);
     const pos = t.pos === 'top' ? 'top' : 'bottom';
     applyColors(tk, t.colors);
     tk.className = `ticker ${pos}${state ? ' ' + state : ''}`;
-    tk.querySelector('.tk-label').textContent = t.label || '';
-
-    // el desplazamiento depende del ancho del texto: se recalcula solo si algo cambió
-    const txt = tk.querySelector('.tk-text');
-    const track = tk.querySelector('.tk-track');
-    const key = `${t.text}|${t.label}|${stage.clientWidth}`;
-    if (txt._key !== key) {
-      txt._key = key;
-      txt.textContent = t.text || '';
-      const from = track.clientWidth || stage.clientWidth;
-      const to = -txt.offsetWidth;
-      const speed = stage.clientWidth * 0.09; // px por segundo, proporcional al ancho de pantalla
-      txt.style.setProperty('--from', from + 'px');
-      txt.style.setProperty('--to', to + 'px');
-      txt.style.animation = 'none';
-      void txt.offsetWidth;
-      txt.style.animation = `tkscroll ${Math.max(4, (from - to) / speed)}s linear infinite`;
+    // etiqueta: ícono opcional (emoji o logo) + texto
+    const lab = tk.querySelector('.tk-label');
+    const iconEl = lab.querySelector('.tk-icon');
+    const ic = t.icon || {};
+    iconEl.textContent = '';
+    if (ic.img) {
+      const img = new Image();
+      img.onload = () => layoutTicker(stage); // el ancho de la etiqueta cambia al cargar la imagen
+      img.src = ic.img;
+      iconEl.appendChild(img);
+    } else if (ic.text) {
+      iconEl.textContent = ic.text;
     }
+    lab.querySelector('.tk-label-text').textContent = t.label || '';
+    lab.classList.toggle('empty', !t.label && !ic.img && !ic.text);
+
+    tk.querySelector('.tk-text').textContent = t.text || '';
+    layoutTicker(stage);
     setStack(stage, pos, true);
   }
 
@@ -146,5 +172,63 @@
     setStack(stage, 'bottom', false);
   }
 
-  window.Lower = { mount, fill, show, hide, fillTicker, showTicker, hideTicker, clearTicker };
+  // ---------- pantallas de cierre: barras de color + logo, o nieve de TV antigua ----------
+  const signoffOf = stage => stage.querySelector('.signoff');
+
+  // nieve: ruido en escala de grises a baja resolución, escalado sin suavizar
+  function startNoise(so) {
+    const c = so.querySelector('.so-noise');
+    if (c._raf) return;
+    c.width = 240; c.height = 135;
+    const ctx = c.getContext('2d');
+    const img = ctx.createImageData(c.width, c.height);
+    const px = img.data;
+    let last = 0;
+    const frame = ts => {
+      c._raf = requestAnimationFrame(frame);
+      if (ts - last < 33) return; // ~30 fps, como la TV
+      last = ts;
+      for (let i = 0; i < px.length; i += 4) {
+        const v = (Math.random() * 255) | 0;
+        px[i] = px[i + 1] = px[i + 2] = v;
+        px[i + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    };
+    c._raf = requestAnimationFrame(frame);
+  }
+  function stopNoise(so) {
+    const c = so.querySelector('.so-noise');
+    if (c._raf) { cancelAnimationFrame(c._raf); c._raf = 0; }
+  }
+
+  function fillSignoff(stage, d) {
+    const so = signoffOf(stage);
+    so.querySelector('.so-logo-text').textContent = d.logo || 'TV';
+    so.querySelector('.so-logo').classList.toggle('custom', !!d.logoImg);
+    if (d.logoImg) so.querySelector('.so-logo-img').src = d.logoImg;
+    so.querySelector('.so-caption').textContent = d.caption || '';
+  }
+  function signoffClass(d, state) {
+    return `signoff ${state} ${d.type === 'noise' ? 'kind-noise' : ''}${d.type === 'noise' && !d.caption ? ' no-caption' : ''}`;
+  }
+  function applySignoff(stage, d, state) {
+    const so = signoffOf(stage);
+    fillSignoff(stage, d);
+    so.className = signoffClass(d, state);
+    if (d.type === 'noise') startNoise(so); else stopNoise(so);
+  }
+  const showSignoff = (stage, d) => applySignoff(stage, d, 'show');
+  function hideSignoff(stage) {
+    const so = signoffOf(stage);
+    so.className = 'signoff';
+    stopNoise(so);
+  }
+  // vista previa: la muestra fija, o la quita si d es null
+  function previewSignoff(stage, d) {
+    if (!d) return hideSignoff(stage);
+    applySignoff(stage, d, 'static');
+  }
+
+  window.Lower = { showSignoff, hideSignoff, previewSignoff, mount, fill, show, hide, fillTicker, showTicker, hideTicker, clearTicker };
 })();

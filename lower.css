@@ -199,7 +199,11 @@
   text-shadow: 0 .2cqh .3cqh rgba(0,0,0,.7);
   box-shadow: .4cqh 0 .8cqh rgba(0,0,0,.4);
 }
-.tk-label:empty { display: none; }
+.tk-label.empty { display: none; }
+.tk-label { gap: 1.2cqh; }
+.tk-icon { display: flex; align-items: center; font-size: 3.4cqh; line-height: 1; }
+.tk-icon:empty { display: none; }
+.tk-icon img { height: 4.4cqh; max-width: 9cqh; object-fit: contain; filter: drop-shadow(0 .2cqh .3cqh rgba(0,0,0,.5)); }
 .tk-track { position: relative; flex: 1; min-width: 0; overflow: hidden; }
 .tk-text {
   position: absolute; left: 0; top: 0; bottom: 0; display: flex; align-items: center; white-space: nowrap;
@@ -210,3 +214,56 @@
 
 /* sin animación: se ve el estado final (vista previa) */
 .ticker.static { transform: none; }
+
+/* ================= Canal cerrado: barras de color + logo ================= */
+.signoff { position: absolute; inset: 0; z-index: 10; display: none; background: #000; }
+.signoff.show, .signoff.static { display: block; }
+.signoff.show { animation: soIn .35s ease-out; }
+@keyframes soIn { from { opacity: 0; } to { opacity: 1; } }
+
+.so-b1, .so-b2, .so-b3 { position: absolute; left: 0; right: 0; }
+/* barras principales (75 %) */
+.so-b1 { top: 0; height: 67%;
+  background: linear-gradient(90deg, #c0c0c0 0 14.286%, #c0c000 0 28.571%, #00c0c0 0 42.857%, #00c000 0 57.143%,
+    #c000c0 0 71.429%, #c00000 0 85.714%, #0000c0 0); }
+/* franja intermedia (barras invertidas) */
+.so-b2 { top: 67%; height: 8%;
+  background: linear-gradient(90deg, #0000c0 0 14.286%, #131313 0 28.571%, #c000c0 0 42.857%, #131313 0 57.143%,
+    #00c0c0 0 71.429%, #131313 0 85.714%, #c0c0c0 0); }
+/* franja inferior (-I, blanco, +Q y negros de ajuste) */
+.so-b3 { top: 75%; bottom: 0;
+  background: linear-gradient(90deg, #00214c 0 16.67%, #ebebeb 0 33.33%, #32006a 0 50%, #131313 0 71.4%,
+    #090909 0 76.2%, #131313 0 80.9%, #1d1d1d 0 85.7%, #131313 0); }
+
+.so-box {
+  position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%);
+  min-width: 34cqh; max-width: 80cqw; padding: 3cqh 6cqh; text-align: center;
+  background: rgba(0,0,0,.9); border: .4cqh solid #fff; border-radius: 1cqh; box-shadow: 0 1cqh 3cqh rgba(0,0,0,.6);
+}
+.so-logo { display: flex; justify-content: center; align-items: center; min-height: 18cqh; }
+.so-logo-text { color: #fff; font-weight: bold; font-size: 13cqh; letter-spacing: .05em; text-transform: uppercase; }
+.so-logo-img { display: none; max-height: 26cqh; max-width: 55cqw; object-fit: contain; }
+.so-logo.custom .so-logo-img { display: block; }
+.so-logo.custom .so-logo-text { display: none; }
+.so-caption { margin-top: 1.5cqh; color: #fff; font-weight: bold; font-size: 3.2cqh; letter-spacing: .2em; text-transform: uppercase; }
+.so-caption:empty { display: none; }
+
+/* ================= Nieve de TV antigua ================= */
+.so-noise { position: absolute; inset: 0; width: 100%; height: 100%; display: none; image-rendering: pixelated; }
+.so-scan {
+  position: absolute; inset: 0; display: none; pointer-events: none; overflow: hidden;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.2) 0 .3cqh, transparent .3cqh .6cqh);
+}
+/* franja de interferencia que sube/baja por la pantalla */
+.so-scan::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 22cqh; top: -25cqh;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,.14), transparent);
+  animation: soRoll 4.5s linear infinite;
+}
+@keyframes soRoll { to { top: 105%; } }
+.signoff.kind-noise .so-noise, .signoff.kind-noise .so-scan { display: block; }
+.signoff.kind-noise .so-b1, .signoff.kind-noise .so-b2, .signoff.kind-noise .so-b3 { display: none; }
+.signoff.kind-noise .so-logo { display: none; }
+.signoff.kind-noise .so-box { min-width: 0; padding: 1.6cqh 4cqh; }
+.signoff.kind-noise.no-caption .so-box { display: none; }
+.signoff.kind-noise .so-caption { margin-top: 0; }

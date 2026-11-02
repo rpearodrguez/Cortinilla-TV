@@ -5,6 +5,8 @@ contextBridge.exposeInMainWorld('cortinilla', {
   hide: () => ipcRenderer.send('hide'),
   showTicker: data => ipcRenderer.send('ticker', data),
   hideTicker: () => ipcRenderer.send('ticker-hide'),
+  showSignoff: data => ipcRenderer.send('signoff', data),
+  hideSignoff: () => ipcRenderer.send('signoff-hide'),
   quit: () => ipcRenderer.send('quit'),
   getDisplays: () => ipcRenderer.invoke('get-displays'),
   setDisplay: id => ipcRenderer.send('set-display', id),
@@ -12,5 +14,7 @@ contextBridge.exposeInMainWorld('cortinilla', {
   onShow: cb => ipcRenderer.on('show', (_e, data) => cb(data)),
   onHide: cb => ipcRenderer.on('hide', () => cb()),
   onTicker: cb => ipcRenderer.on('ticker', (_e, data) => cb(data)),
-  onTickerHide: cb => ipcRenderer.on('ticker-hide', () => cb())
+  onTickerHide: cb => ipcRenderer.on('ticker-hide', () => cb()),
+  onSignoff: cb => ipcRenderer.on('signoff', (_e, data) => cb(data)),
+  onSignoffHide: cb => ipcRenderer.on('signoff-hide', () => cb())
 });

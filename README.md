@@ -14,12 +14,13 @@ Es una app de escritorio (Electron) con dos ventanas:
 - **Cuatro estilos** de gráfico: *Cortinilla de series*, *Noticiero*, *Matutino* y *Auspicio* (con frases como "Este programa es auspiciado por…" o "[Serie] es auspiciado por…").
 - **Posición a elegir**: esquinas o barra de ancho completo, arriba o abajo.
 - **Generador de caracteres**: etiqueta, título y subtítulo (por ejemplo nombre y cargo), con frases predefinidas o texto propio.
-- **Cintillo desplazable** tipo noticiero, con etiqueta propia ("ÚLTIMA HORA"), arriba o abajo; se apila con la cortinilla sin taparla.
+- **Cintillo desplazable** tipo noticiero, arriba o abajo; se apila con la cortinilla sin taparla. La etiqueta se elige entre frases predefinidas ("Última hora", "Urgente"…) o personalizada, y puede llevar un ícono (emoji o el logo del canal).
 - **Barrido de entrada y salida configurable**: desde un lado, sube/baja, desvanecer, zoom, rebote o revelado, con velocidad ajustable.
 - Frases predefinidas en **español e inglés**: cambia de idioma con los botones **ES / EN** (el panel también cambia).
 - **Vista previa** en el propio panel (no aparece en la pantalla compartida) para elegir colores y probar la entrada y salida con un clic.
 - Elección de la **pantalla** donde aparece (por defecto, la segunda si existe).
-- **Logo personalizado**: imagen propia (PNG, JPG, GIF, WebP o SVG) o texto corto.
+- **Logos guardados**: añade tantas imágenes como quieras (PNG, JPG, GIF, WebP o SVG) y cambia entre ellas con un clic; también puedes usar solo texto corto.
+- **Pantallas de cierre** a pantalla completa: *barras de color* con el logo al centro, o *nieve* de TV antigua (estática animada), con texto opcional y sonido opcional (tono de 1 kHz o siseo).
 - **Colores** configurables para la barra, la frase, el título y el logo.
 - Duración automática o manual.
 - Recuerda tus preferencias entre sesiones.
@@ -94,12 +95,13 @@ It's a desktop app (Electron) with two windows:
 - **Four graphic styles**: *Series bumper*, *News*, *Morning show* and *Sponsor* (phrases like "This program is sponsored by…" or "[Show] is sponsored by…").
 - **Choose the position**: corners or full-width bar, top or bottom.
 - **Character generator**: tag, title and subtitle (e.g. name and role), with preset phrases or your own text.
-- **Scrolling news ticker** with its own label ("BREAKING"), top or bottom; it stacks with the bumper without covering it.
+- **Scrolling news ticker**, top or bottom; it stacks with the bumper without covering it. The label can be a preset ("Breaking news", "Urgent"…) or custom, and can carry an icon (emoji or the channel logo).
 - **Customizable enter/exit animation**: from a side, rise/drop, fade, zoom, bounce or wipe, with adjustable speed.
 - Preset phrases in **Spanish and English**: switch with the **ES / EN** buttons (the panel UI changes too).
 - Built-in **preview** in the panel (never shown on the shared screen) to fine-tune colors and test the enter/exit with one click.
 - Choose which **screen** it appears on (defaults to the second one if present).
-- **Custom logo**: your own image (PNG, JPG, GIF, WebP or SVG) or short text.
+- **Saved logos**: add as many images as you like (PNG, JPG, GIF, WebP or SVG) and switch between them with one click; or just use short text.
+- **Full-screen sign-off screens**: *color bars* with the logo in the center, or old-TV *snow* (animated static), with an optional caption and optional sound (1 kHz tone or hiss).
 - Customizable **colors** for the bar, phrase, title and logo.
 - Automatic or manual duration.
 - Remembers your settings between sessions.

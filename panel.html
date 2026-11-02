@@ -24,9 +24,10 @@
   #previewLabel small { font-weight: normal; }
   #preview { aspect-ratio: 16 / 9; width: 100%; flex: none; border: 1px solid #555; border-radius: .25em; cursor: pointer;
              background: #2b2b2b repeating-conic-gradient(#3a3a3a 0 25%, #2b2b2b 0 50%) 0 0 / 1.5em 1.5em; }
-  .grp { border: 1px solid #b5b5b5; border-radius: .3em; padding: .6em; display: grid; gap: .45em; background: #fafafa; }
-  .grp > b { color: #333; }
+  /* botones de acción: siempre visibles al pie de cada pestaña, aunque haya que hacer scroll */
+  .actions { position: sticky; bottom: -1em; padding: .6em 0 1em; margin-top: auto; background: #f0f0f0; }
   .btn-go { background: #1f5fd1; color: #fff; border: 1px solid #0b3a9c; }
+  #quit { margin-top: auto; }
   .btn-tk { background: #c78a00; color: #fff; border: 1px solid #8a5f00; }
 
   /* ---------- columna derecha: pestañas ---------- */
@@ -54,13 +55,22 @@
   .p-tl i, .p-bl i { left: .3em; width: 55%; }
   .p-tr i, .p-br i { right: .3em; width: 55%; }
 
-  #logoPreview { height: 3.8em; display: none; align-items: center; justify-content: center; background: #ddd; border: 1px solid #aaa; }
-  #logoImg { max-height: 3.4em; max-width: 100%; }
+  /* biblioteca de logos guardados */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(5em, 1fr)); gap: .5em; }
+  .logo-item { position: relative; height: 4em; display: flex; align-items: center; justify-content: center; padding: .25em;
+               background: #ddd; border: .15em solid #aaa; border-radius: .3em; cursor: pointer; text-align: center; font-size: .9em; color: #555; }
+  .logo-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .logo-item.active { border-color: #1f5fd1; background: #dbe7fb; }
+  .logo-item .del { position: absolute; top: -.5em; right: -.5em; width: 1.6em; height: 1.6em; padding: 0; line-height: 1;
+                    display: none; border-radius: 50%; background: #c33; color: #fff; border: 1px solid #800; }
+  .logo-item:hover .del { display: block; }
+  #logoMsg { color: #b00; min-height: 1.2em; }
   .colors { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6em; }
   .colors label { text-align: center; }
   input[type=color] { width: 100%; height: 2.6em; padding: 0; cursor: pointer; }
   input[type=range] { padding: 0; }
-  #prefixCustom { display: none; margin-top: .3em; }
+  .check { display: flex; align-items: center; gap: .5em; }
+  #prefixCustom, #tkLabelCustom { display: none; margin-top: .3em; }
   textarea { resize: vertical; min-height: 4.5em; }
 </style>
 </head>
@@ -72,21 +82,6 @@
     <div>
       <div id="previewLabel"><span data-i18n="preview"></span><small data-i18n="previewHint"></small></div>
       <div id="preview"></div>
-    </div>
-
-    <div class="grp">
-      <b data-i18n="grpGraphic"></b>
-      <div class="row">
-        <button id="go" class="btn-go" data-i18n="go"></button>
-        <button id="stop" data-i18n="stop"></button>
-      </div>
-    </div>
-    <div class="grp">
-      <b data-i18n="grpTicker"></b>
-      <div class="row">
-        <button id="tkGo" class="btn-tk" data-i18n="tkShow"></button>
-        <button id="tkStop" data-i18n="tkHide"></button>
-      </div>
     </div>
 
     <small data-i18n="hint"></small>
@@ -101,6 +96,7 @@
         <button class="tabbtn" data-tab="ticker" data-i18n="tabTicker"></button>
         <button class="tabbtn" data-tab="look" data-i18n="tabLook"></button>
         <button class="tabbtn" data-tab="anim" data-i18n="tabAnim"></button>
+        <button class="tabbtn" data-tab="signoff" data-i18n="tabSignoff"></button>
         <button class="tabbtn" data-tab="settings" data-i18n="tabSettings"></button>
       </div>
       <div class="langs">
@@ -130,14 +126,26 @@
       <label><span id="lblName"></span><input id="show" type="text" autocomplete="off"></label>
       <label id="rowSub"><span data-i18n="sub"></span><input id="sub" type="text" autocomplete="off"></label>
       <label><span data-i18n="dur"></span><input id="dur" type="number" min="0" value="8"></label>
+      <div class="row actions">
+        <button id="go" class="btn-go" data-i18n="go"></button>
+        <button id="stop" data-i18n="stop"></button>
+      </div>
     </section>
 
     <!-- Cintillo desplazable -->
     <section class="tab" id="tab-ticker">
       <label><span data-i18n="tkText"></span><textarea id="tkText"></textarea></label>
-      <label><span data-i18n="tkLabel"></span><input id="tkLabel" type="text" maxlength="24" autocomplete="off"></label>
+      <label><span data-i18n="tkLabel"></span>
+        <select id="tkLabelSel"></select>
+        <input id="tkLabelCustom" type="text" maxlength="24" autocomplete="off">
+      </label>
+      <label><span data-i18n="tkIcon"></span><select id="tkIcon"></select></label>
       <label><span data-i18n="tkPos"></span><select id="tkPos"></select></label>
       <small data-i18n="tkHint"></small>
+      <div class="row actions">
+        <button id="tkGo" class="btn-tk" data-i18n="tkShow"></button>
+        <button id="tkStop" data-i18n="tkHide"></button>
+      </div>
     </section>
 
     <!-- Colores y logo -->
@@ -150,11 +158,10 @@
       </div>
       <button id="resetColors" data-i18n="resetColors"></button>
       <label><span data-i18n="logoText"></span><input id="logo" type="text" value="TV" maxlength="6"></label>
-      <div class="row">
-        <button id="pickLogo" data-i18n="pickLogo"></button>
-        <button id="clearLogo" data-i18n="clearLogo"></button>
-      </div>
-      <div id="logoPreview"><img id="logoImg" alt=""></div>
+      <button id="pickLogo" data-i18n="pickLogo"></button>
+      <b data-i18n="logoSaved"></b>
+      <div class="gallery" id="logoGallery"></div>
+      <small id="logoMsg"></small>
     </section>
 
     <!-- Animación -->
@@ -165,6 +172,18 @@
         <input id="speed" type="range" min="0.3" max="2" step="0.1" value="0.7">
       </label>
       <button id="playAnim" data-i18n="playAnim"></button>
+    </section>
+
+    <!-- Canal cerrado -->
+    <section class="tab" id="tab-signoff">
+      <label><span data-i18n="soType"></span><select id="soType"></select></label>
+      <label><span data-i18n="soCaption"></span><input id="soCaption" type="text" maxlength="40" autocomplete="off"></label>
+      <label><span data-i18n="soSound"></span><select id="soSound"></select></label>
+      <div class="row actions">
+        <button id="soGo" class="btn-go" data-i18n="soShow"></button>
+        <button id="soStop" data-i18n="soHide"></button>
+      </div>
+      <small data-i18n="soHint"></small>
     </section>
 
     <!-- Ajustes -->
@@ -187,7 +206,14 @@
       go: '▶ Mostrar (Enter)', stop: '■ Ocultar (Esc)', tkShow: '▶ Mostrar cintillo', tkHide: '■ Ocultar cintillo',
       quit: 'Cerrar cortinilla',
       hint: 'Los gráficos aparecen sobre la pantalla elegida sin bloquear el ratón. La vista previa no se ve en la pantalla compartida.',
-      tabTitles: 'Títulos', tabTicker: 'Cintillo', tabLook: 'Colores y logo', tabAnim: 'Animación', tabSettings: 'Ajustes',
+      tabTitles: 'Títulos', tabTicker: 'Cintillo', tabLook: 'Colores y logo', tabAnim: 'Animación', tabSignoff: 'Canal cerrado', tabSettings: 'Ajustes',
+      soType: 'Tipo de pantalla',
+      soTypeList: [['bars', 'Barras de color con logo'], ['noise', 'Nieve (estática de TV antigua)']],
+      soCaption: 'Texto en pantalla', soCaptionDefault: 'Fin de transmisión', soCaptionNoisePh: 'Opcional. Ej: Sin señal',
+      soSound: 'Sonido (suena solo en este equipo)',
+      soSoundList: [['none', 'Sin sonido'], ['tone', 'Tono de prueba de 1 kHz'], ['hiss', 'Siseo de estática']],
+      soShow: '▶ Mostrar pantalla', soHide: '■ Quitar pantalla',
+      soHint: 'Cubre toda la pantalla elegida. Las barras llevan el logo al centro (el de Colores y logo). Se queda hasta que la quites.',
       style: 'Estilo', position: 'Posición',
       styles: {
         bumper: { label: 'Cortinilla de series', prefix: 'Frase', name: 'Serie / programa', namePh: 'Ej: Los Simpson',
@@ -204,10 +230,17 @@
       custom: '✏ Personalizada…', customPh: 'Escribe tu propio texto',
       sub: 'Subtítulo (cargo, lugar…)', dur: 'Duración (segundos, 0 = manual)',
       tkText: 'Texto del cintillo', tkTextPh: 'Escribe aquí el texto que se desplazará…', tkLabel: 'Etiqueta del cintillo',
-      tkLabelDefault: 'ÚLTIMA HORA', tkPos: 'Posición del cintillo', tkTop: 'Arriba', tkBottom: 'Abajo',
+      tkPhrases: ['Última hora', 'Urgente', 'En vivo', 'Alerta', 'Deportes', 'Clima', 'Economía', 'Espectáculos'],
+      tkIcon: 'Ícono de la etiqueta',
+      tkIconList: [['', 'Sin ícono'], ['logo', 'Logo del canal'], ['🔴', '🔴 Punto rojo'], ['⚠️', '⚠️ Alerta'], ['🚨', '🚨 Sirena'],
+        ['📰', '📰 Noticias'], ['⚡', '⚡ Rayo'], ['🔔', '🔔 Campana'], ['📺', '📺 Televisión']],
+      tkPos: 'Posición del cintillo', tkTop: 'Arriba', tkBottom: 'Abajo',
       tkHint: 'El cintillo se queda en pantalla hasta que lo ocultes. Si hay una cortinilla en el mismo lado, se sube para no taparse.',
       cBar: 'Barra', cPre: 'Etiqueta', cTitle: 'Título', cLogo: 'Logo', resetColors: 'Restaurar colores',
-      logoText: 'Logo del canal (texto)', pickLogo: '🖼 Elegir imagen de logo…', clearLogo: 'Quitar',
+      logoText: 'Logo del canal (texto)', pickLogo: '🖼 Añadir imagen de logo…',
+      logoSaved: 'Logos guardados (clic para elegir)', logoNone: 'Sin imagen (usa el texto)',
+      logoDel: 'Eliminar', logoDelConfirm: '¿Eliminar este logo de la lista?',
+      logoFull: 'No se pudo guardar: la lista está llena o sin espacio. Elimina algún logo.',
       animIn: 'Entrada', animOut: 'Salida', speed: 'Velocidad (duración)', playAnim: '▶ Probar en la vista previa',
       animInList: [['auto', 'Automática (según posición)'], ['left', 'Desde la izquierda'], ['right', 'Desde la derecha'],
         ['up', 'Sube'], ['down', 'Baja'], ['fade', 'Desvanecer'], ['zoom', 'Zoom'], ['bounce', 'Rebote'], ['wipe', 'Barrido (revelado)']],
@@ -223,11 +256,18 @@
       go: '▶ Show (Enter)', stop: '■ Hide (Esc)', tkShow: '▶ Show ticker', tkHide: '■ Hide ticker',
       quit: 'Close overlay',
       hint: 'Graphics appear on the chosen screen and never block the mouse. The preview is not visible in the shared screen.',
-      tabTitles: 'Titles', tabTicker: 'Ticker', tabLook: 'Colors & logo', tabAnim: 'Animation', tabSettings: 'Settings',
+      tabTitles: 'Titles', tabTicker: 'Ticker', tabLook: 'Colors & logo', tabAnim: 'Animation', tabSignoff: 'Sign-off', tabSettings: 'Settings',
+      soType: 'Screen type',
+      soTypeList: [['bars', 'Color bars with logo'], ['noise', 'Snow (old TV static)']],
+      soCaption: 'On-screen text', soCaptionDefault: 'End of broadcast', soCaptionNoisePh: 'Optional. E.g. No signal',
+      soSound: 'Sound (plays on this computer only)',
+      soSoundList: [['none', 'No sound'], ['tone', '1 kHz test tone'], ['hiss', 'Static hiss']],
+      soShow: '▶ Show screen', soHide: '■ Remove screen',
+      soHint: 'Covers the whole chosen screen. The bars carry the logo in the center (the one from Colors & logo). It stays until you remove it.',
       style: 'Style', position: 'Position',
       styles: {
         bumper: { label: 'Series bumper', prefix: 'Phrase', name: 'Show / series', namePh: 'E.g. The Simpsons',
-          phrases: ['Up next', 'Coming up', 'Back to', 'Later tonight', 'Coming soon', 'Tonight', "You're watching"] },
+          phrases: ['Up next', 'Continuing with', 'Back to', 'Later tonight', 'Coming soon', 'Tonight', "You're watching"] },
         news: { label: 'News', prefix: 'Tag', name: 'Headline / name', namePh: 'E.g. John Smith',
           phrases: ['Live', 'Breaking news', 'On location', 'Exclusive', 'Special report', 'Interview', 'Recap'] },
         morning: { label: 'Morning show', prefix: 'Tag', name: 'Title / guest', namePh: "E.g. Grandma's recipe",
@@ -240,10 +280,17 @@
       custom: '✏ Custom…', customPh: 'Type your own text',
       sub: 'Subtitle (role, place…)', dur: 'Duration (seconds, 0 = manual)',
       tkText: 'Ticker text', tkTextPh: 'Type the text that will scroll here…', tkLabel: 'Ticker label',
-      tkLabelDefault: 'BREAKING', tkPos: 'Ticker position', tkTop: 'Top', tkBottom: 'Bottom',
+      tkPhrases: ['Breaking news', 'Urgent', 'Live', 'Alert', 'Sports', 'Weather', 'Business', 'Entertainment'],
+      tkIcon: 'Label icon',
+      tkIconList: [['', 'No icon'], ['logo', 'Channel logo'], ['🔴', '🔴 Red dot'], ['⚠️', '⚠️ Alert'], ['🚨', '🚨 Siren'],
+        ['📰', '📰 News'], ['⚡', '⚡ Bolt'], ['🔔', '🔔 Bell'], ['📺', '📺 Television']],
+      tkPos: 'Ticker position', tkTop: 'Top', tkBottom: 'Bottom',
       tkHint: 'The ticker stays on screen until you hide it. A graphic on the same side moves up so they never overlap.',
       cBar: 'Bar', cPre: 'Tag', cTitle: 'Title', cLogo: 'Logo', resetColors: 'Reset colors',
-      logoText: 'Channel logo (text)', pickLogo: '🖼 Choose logo image…', clearLogo: 'Remove',
+      logoText: 'Channel logo (text)', pickLogo: '🖼 Add logo image…',
+      logoSaved: 'Saved logos (click to choose)', logoNone: 'No image (use the text)',
+      logoDel: 'Delete', logoDelConfirm: 'Delete this logo from the list?',
+      logoFull: 'Could not save: the list is full or out of space. Delete a logo.',
       animIn: 'Enter', animOut: 'Exit', speed: 'Speed (duration)', playAnim: '▶ Test in the preview',
       animInList: [['auto', 'Automatic (by position)'], ['left', 'From the left'], ['right', 'From the right'],
         ['up', 'Rise'], ['down', 'Drop'], ['fade', 'Fade'], ['zoom', 'Zoom'], ['bounce', 'Bounce'], ['wipe', 'Wipe (reveal)']],
@@ -301,6 +348,13 @@
     fillSelect($('animIn'), t().animInList);
     fillSelect($('animOut'), t().animOutList);
     fillSelect($('tkPos'), [['bottom', t().tkBottom], ['top', t().tkTop]]);
+    fillSelect($('tkLabelSel'), [...t().tkPhrases.map((p, i) => [i, p]), ['-1', t().custom]]);
+    fillSelect($('tkIcon'), t().tkIconList);
+    $('tkLabelCustom').placeholder = t().customPh;
+    fillSelect($('soType'), t().soTypeList);
+    fillSelect($('soSound'), t().soSoundList);
+    $('soCaption').placeholder = $('soType').value === 'noise' ? t().soCaptionNoisePh : t().soCaptionDefault;
+    $('tkLabelCustom').style.display = $('tkLabelSel').value === '-1' ? 'block' : 'none';
     document.querySelectorAll('.posbtn').forEach(b => { b.title = t().posNames[b.dataset.pos]; });
     $('prefixCustom').placeholder = t().customPh;
     $('tkText').placeholder = t().tkTextPh;
@@ -310,12 +364,8 @@
   }
 
   function setLang(l) {
-    // si la etiqueta del cintillo era la de fábrica, se traduce también
-    const defaults = [I18N.es.tkLabelDefault, I18N.en.tkLabelDefault];
-    const wasDefault = !$('tkLabel').value || defaults.includes($('tkLabel').value);
     lang = l;
     try { localStorage.setItem('cortinilla-lang', lang); } catch (e) {}
-    if (wasDefault) $('tkLabel').value = t().tkLabelDefault;
     applyLang();
   }
   $('langEs').onclick = () => setLang('es');
@@ -328,6 +378,7 @@
     document.querySelectorAll('.tabbtn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
     document.querySelectorAll('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
     try { localStorage.setItem('cortinilla-tab', name); } catch (e) {}
+    updatePreview();
   }
   document.querySelectorAll('.tabbtn').forEach(b => { b.onclick = () => setTab(b.dataset.tab); });
 
@@ -345,6 +396,10 @@
     refreshStyle();
     if ($('prefix').value !== '-1') $('prefix').value = '0';
     updatePreview();
+  };
+  $('tkLabelSel').onchange = () => {
+    $('tkLabelCustom').style.display = $('tkLabelSel').value === '-1' ? 'block' : 'none';
+    if ($('tkLabelSel').value === '-1') $('tkLabelCustom').focus();
   };
   $('prefix').onchange = () => {
     $('prefixCustom').style.display = $('prefix').value === '-1' ? 'block' : 'none';
@@ -373,7 +428,28 @@
       dur: parseFloat($('dur').value) || 0
     };
   }
-  const currentTicker = () => ({ text: $('tkText').value.trim(), label: $('tkLabel').value.trim(), pos: $('tkPos').value, colors: colors() });
+  function tkLabelText() {
+    const v = $('tkLabelSel').value;
+    return v === '-1' ? $('tkLabelCustom').value.trim() : (t().tkPhrases[Number(v)] || '');
+  }
+  // ícono de la etiqueta: emoji, o el logo del canal (imagen si la hay, si no su texto)
+  function tkIconData() {
+    const v = $('tkIcon').value;
+    if (!v) return {};
+    if (v === 'logo') return logoImg ? { img: logoImg } : { text: $('logo').value || 'TV' };
+    return { text: v };
+  }
+  const currentSignoff = () => {
+    const type = $('soType').value;
+    const typed = $('soCaption').value.trim();
+    return {
+      type, logo: $('logo').value || 'TV', logoImg,
+      // en las barras, si no escribes nada va el texto de fábrica; en la nieve el texto es opcional
+      caption: type === 'noise' ? typed : (typed || t().soCaptionDefault),
+      sound: $('soSound').value
+    };
+  };
+  const currentTicker = () => ({ text: $('tkText').value.trim(), label: tkLabelText(), icon: tkIconData(), pos: $('tkPos').value, colors: colors() });
 
   // ---------- Vista previa ----------
   const stage = $('preview');
@@ -390,6 +466,7 @@
     Lower.fill(stage, previewData(), 'static');
     const tk = currentTicker();
     if (tk.text) Lower.fillTicker(stage, tk, 'static'); else Lower.clearTicker(stage);
+    Lower.previewSignoff(stage, tab === 'signoff' ? currentSignoff() : null);
     $('speedVal').textContent = speed().toFixed(1) + ' s';
     persist();
   }
@@ -411,8 +488,9 @@
     try {
       localStorage.setItem('cortinilla', JSON.stringify({
         style: $('style').value, pos, prefix: $('prefix').value, prefixCustom: $('prefixCustom').value,
-        logo: $('logo').value, dur: $('dur').value, tkLabel: $('tkLabel').value, tkPos: $('tkPos').value,
-        animIn: $('animIn').value, animOut: $('animOut').value, speed: $('speed').value
+        logo: $('logo').value, dur: $('dur').value, tkLabelSel: $('tkLabelSel').value, tkLabelCustom: $('tkLabelCustom').value, tkIcon: $('tkIcon').value, tkPos: $('tkPos').value,
+        animIn: $('animIn').value, animOut: $('animOut').value, speed: $('speed').value,
+        soCaption: $('soCaption').value, soType: $('soType').value, soSound: $('soSound').value
       }));
       localStorage.setItem('cortinilla-colors', JSON.stringify(colors()));
     } catch (e) {}
@@ -421,25 +499,103 @@
   const COLORS = { cBar: '#1f5fd1', cPre: '#ffd84a', cTitle: '#ffffff', cLogo: '#f5a800' };
   $('resetColors').onclick = () => { for (const k in COLORS) $(k).value = COLORS[k]; updatePreview(); };
 
-  // ---------- Logo ----------
-  var logoImg = null;
-  try { logoImg = localStorage.getItem('cortinilla-logo'); } catch (e) {}
+  // ---------- Logos (biblioteca guardada) ----------
+  const MAX_LOGOS = 30;
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  let logos = [];      // [{ id, name, data }]
+  let logoId = '';     // logo elegido ('' = sin imagen, se usa el texto)
+  var logoImg = null;  // data URL del logo elegido
+
+  function saveLogos() {
+    try {
+      localStorage.setItem('cortinilla-logos', JSON.stringify(logos));
+      localStorage.setItem('cortinilla-logo-id', logoId);
+      $('logoMsg').textContent = '';
+      return true;
+    } catch (e) {
+      $('logoMsg').textContent = t().logoFull;
+      return false;
+    }
+  }
+  try {
+    logos = JSON.parse(localStorage.getItem('cortinilla-logos') || '[]');
+    logoId = localStorage.getItem('cortinilla-logo-id') || '';
+    // migración: versiones anteriores guardaban un solo logo
+    const old = localStorage.getItem('cortinilla-logo');
+    if (old) {
+      let l = logos.find(x => x.data === old);
+      if (!l) { l = { id: newId(), name: 'Logo', data: old }; logos.push(l); }
+      logoId = l.id;
+      localStorage.removeItem('cortinilla-logo');
+      saveLogos();
+    }
+  } catch (e) { logos = []; }
+
+  // imágenes grandes se reducen para no agotar el almacenamiento local
+  function shrink(data) {
+    if (data.length < 500000) return Promise.resolve(data);
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, 512 / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        resolve(c.toDataURL('image/png'));
+      };
+      img.onerror = () => resolve(data);
+      img.src = data;
+    });
+  }
+
   function renderLogo() {
-    $('logoPreview').style.display = logoImg ? 'flex' : 'none';
-    if (logoImg) $('logoImg').src = logoImg;
+    const sel = logos.find(l => l.id === logoId);
+    if (!sel) logoId = '';
+    logoImg = sel ? sel.data : null;
+
+    const gal = $('logoGallery');
+    gal.textContent = '';
+    const none = document.createElement('div');
+    none.className = 'logo-item' + (logoImg ? '' : ' active');
+    none.textContent = t().logoNone;
+    none.onclick = () => selectLogo('');
+    gal.appendChild(none);
+    for (const l of logos) {
+      const item = document.createElement('div');
+      item.className = 'logo-item' + (l.id === logoId ? ' active' : '');
+      item.title = l.name;
+      const img = document.createElement('img');
+      img.src = l.data; img.alt = l.name;
+      const del = document.createElement('button');
+      del.className = 'del'; del.textContent = '×'; del.title = t().logoDel;
+      del.onclick = e => { e.stopPropagation(); deleteLogo(l.id); };
+      item.onclick = () => selectLogo(l.id);
+      item.append(img, del);
+      gal.appendChild(item);
+    }
     updatePreview();
   }
+  function selectLogo(id) { logoId = id; saveLogos(); renderLogo(); }
+  function deleteLogo(id) {
+    if (!confirm(t().logoDelConfirm)) return;
+    logos = logos.filter(l => l.id !== id);
+    if (logoId === id) logoId = '';
+    saveLogos(); renderLogo();
+  }
+
   $('pickLogo').onclick = async () => {
-    const img = await cortinilla.pickLogo();
-    if (!img) return;
-    logoImg = img;
-    try { localStorage.setItem('cortinilla-logo', img); } catch (e) {}
-    renderLogo();
-  };
-  $('clearLogo').onclick = () => {
-    logoImg = null;
-    try { localStorage.removeItem('cortinilla-logo'); } catch (e) {}
-    renderLogo();
+    const files = await cortinilla.pickLogo();
+    for (const f of files || []) {
+      const data = await shrink(f.data);
+      let l = logos.find(x => x.data === data); // si ya está guardado, solo se elige
+      if (!l) {
+        if (logos.length >= MAX_LOGOS) { $('logoMsg').textContent = t().logoFull; break; }
+        l = { id: newId(), name: f.name, data };
+        logos.push(l);
+      }
+      logoId = l.id;
+    }
+    saveLogos(); renderLogo();
   };
 
   // ---------- Pantallas ----------
@@ -465,19 +621,23 @@
   $('stop').onclick = () => cortinilla.hide();
   $('tkGo').onclick = showTicker;
   $('tkStop').onclick = () => cortinilla.hideTicker();
+  $('soType').onchange = () => {
+    $('soCaption').placeholder = $('soType').value === 'noise' ? t().soCaptionNoisePh : t().soCaptionDefault;
+  };
+  $('soGo').onclick = () => cortinilla.showSignoff(currentSignoff());
+  $('soStop').onclick = () => cortinilla.hideSignoff();
   $('quit').onclick = () => cortinilla.quit();
 
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'BUTTON') return; // el botón enfocado ya reacciona a Enter
     if (e.key === 'Escape') cortinilla.hide();
     else if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
-      if (tab === 'ticker') showTicker(); else show();
+      if (tab === 'ticker') showTicker(); else if (tab === 'signoff') cortinilla.showSignoff(currentSignoff()); else show();
     } else if (e.key === 'Enter' && e.ctrlKey) showTicker();
   });
 
   // ---------- Arranque ----------
   applyLang();
-  $('tkLabel').value = t().tkLabelDefault;
   try {
     const s = JSON.parse(localStorage.getItem('cortinilla') || '{}');
     if (s.style && t().styles[s.style]) { $('style').value = s.style; refreshStyle(); }
@@ -486,11 +646,18 @@
     $('prefixCustom').style.display = $('prefix').value === '-1' ? 'block' : 'none';
     if (s.logo) $('logo').value = s.logo;
     if (s.dur != null) $('dur').value = s.dur;
-    if (s.tkLabel) $('tkLabel').value = s.tkLabel;
+    if (s.tkLabelSel != null && [...$('tkLabelSel').options].some(o => o.value === String(s.tkLabelSel))) $('tkLabelSel').value = s.tkLabelSel;
+    if (s.tkLabelCustom) $('tkLabelCustom').value = s.tkLabelCustom;
+    $('tkLabelCustom').style.display = $('tkLabelSel').value === '-1' ? 'block' : 'none';
+    if (s.tkIcon != null && [...$('tkIcon').options].some(o => o.value === s.tkIcon)) $('tkIcon').value = s.tkIcon;
     if (s.tkPos) $('tkPos').value = s.tkPos;
     if (s.animIn) $('animIn').value = s.animIn;
     if (s.animOut) $('animOut').value = s.animOut;
     if (s.speed) $('speed').value = s.speed;
+    if (s.soCaption) $('soCaption').value = s.soCaption;
+    if (s.soType && [...$('soType').options].some(o => o.value === s.soType)) $('soType').value = s.soType;
+    if (s.soSound && [...$('soSound').options].some(o => o.value === s.soSound)) $('soSound').value = s.soSound;
+    $('soCaption').placeholder = $('soType').value === 'noise' ? t().soCaptionNoisePh : t().soCaptionDefault;
     if (s.pos) pos = s.pos;
     const c = JSON.parse(localStorage.getItem('cortinilla-colors') || '{}');
     for (const k in COLORS) $(k).value = c[k.replace(/^c/, '').toLowerCase()] || COLORS[k];

@@ -28,7 +28,7 @@ function createOverlay() {
     x, y, width, height,
     transparent: true, frame: false, resizable: false, movable: false,
     focusable: false, skipTaskbar: true, hasShadow: false,
-    webPreferences: { preload: path.join(__dirname, 'preload.js') }
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), autoplayPolicy: 'no-user-gesture-required' }
   });
   overlay.setAlwaysOnTop(true, 'screen-saver');
   overlay.setIgnoreMouseEvents(true);
@@ -39,8 +39,8 @@ function createOverlay() {
 function createPanel() {
   const work = screen.getPrimaryDisplay().workAreaSize;
   panel = new BrowserWindow({
-    width: Math.min(920, work.width), height: Math.min(540, work.height),
-    minWidth: 820, minHeight: 480, resizable: true, title: 'Cortinilla TV',
+    width: Math.min(920, work.width), height: Math.min(560, work.height),
+    minWidth: 820, minHeight: 520, resizable: true, title: 'Cortinilla TV',
     useContentSize: true, autoHideMenuBar: true,
     webPreferences: { preload: path.join(__dirname, 'preload.js') }
   });
@@ -68,6 +68,8 @@ if (!app.requestSingleInstanceLock()) {
 ipcMain.on('show', (_e, data) => overlay && overlay.webContents.send('show', data));
 ipcMain.on('ticker', (_e, data) => overlay && overlay.webContents.send('ticker', data));
 ipcMain.on('ticker-hide', () => overlay && overlay.webContents.send('ticker-hide'));
+ipcMain.on('signoff', (_e, data) => overlay && overlay.webContents.send('signoff', data));
+ipcMain.on('signoff-hide', () => overlay && overlay.webContents.send('signoff-hide'));
 ipcMain.handle('get-displays', () => {
   const primary = screen.getPrimaryDisplay();
   const current = overlay && screen.getDisplayMatching(overlay.getBounds());
@@ -89,13 +91,17 @@ ipcMain.on('set-display', (_e, id) => {
 ipcMain.handle('pick-logo', async () => {
   const r = await dialog.showOpenDialog(panel, {
     title: 'Elegir logo',
-    properties: ['openFile'],
+    properties: ['openFile', 'multiSelections'],
     filters: [{ name: 'Imágenes', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] }]
   });
-  if (r.canceled || !r.filePaths[0]) return null;
-  const file = r.filePaths[0];
-  const ext = path.extname(file).slice(1).toLowerCase().replace('jpg', 'jpeg').replace('svg', 'svg+xml');
-  return `data:image/${ext};base64,${fs.readFileSync(file).toString('base64')}`;
+  if (r.canceled) return [];
+  return r.filePaths.map(file => {
+    const ext = path.extname(file).slice(1).toLowerCase().replace('jpg', 'jpeg').replace('svg', 'svg+xml');
+    return {
+      name: path.basename(file, path.extname(file)),
+      data: `data:image/${ext};base64,${fs.readFileSync(file).toString('base64')}`
+    };
+  });
 });
 
 ipcMain.on('hide', () => overlay && overlay.webContents.send('hide'));
