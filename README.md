@@ -2,7 +2,7 @@
 
 **Español** · [English](#english)
 
-Cortinillas ("lower thirds") de televisión con estilo retro para tus maratones de series por pantalla compartida: barra azul brillante, logo redondo y frases como *"A continuación"* o *"Seguimos con"* seguidas del nombre de la serie.
+Cortinillas ("lower thirds") de televisión para tus maratones de series por pantalla compartida: barra azul brillante, logo redondo y frases como *"A continuación"* o *"Seguimos con"* seguidas del nombre de la serie.
 
 Es una app de escritorio (Electron) con dos ventanas:
 
@@ -136,7 +136,7 @@ Este es un proyecto personal, hecho por diversión y compartido tal cual (ver la
 
 ## English
 
-Retro-style TV lower thirds for your screen-sharing series nights: glossy blue bar, round logo, and phrases like *"Up next"* or *"Coming up"* followed by the show's name.
+TV lower thirds for your screen-sharing series nights: glossy blue bar, round logo, and phrases like *"Up next"* or *"Coming up"* followed by the show's name.
 
 It's a desktop app (Electron) with two windows:
 
