@@ -74,6 +74,10 @@ En Windows también puedes hacer doble clic en `iniciar.bat`.
 
 La app no usa red ni envía datos. Tus preferencias y el logo elegido se guardan solo en el almacenamiento local de la app en tu equipo, no en este repositorio.
 
+## Licencia
+
+[MIT](LICENSE) © 2026 Richard Peña. Los logos y marcas que cargues en la app pertenecen a sus respectivos dueños.
+
 ---
 
 ## English
@@ -129,3 +133,7 @@ npm start
 ### Privacy
 
 The app makes no network requests and sends no data. Your settings and chosen logo are stored only in the app's local storage on your machine, never in this repository.
+
+### License
+
+[MIT](LICENSE) © 2026 Richard Peña. Logos and trademarks you load into the app belong to their respective owners.
